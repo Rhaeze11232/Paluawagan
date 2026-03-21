@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PaluwagAN — Payout Schedule</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal-900:#042f2e;--teal-800:#134e4a;--teal-700:#115e59;--teal-600:#0d9488;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;--teal-100:#ccfbf1;--teal-50:#f0fdfa;
+      --green-500:#22c55e;--green-100:#dcfce7;
+      --slate-900:#0f172a;--slate-700:#334155;--slate-500:#64748b;--slate-400:#94a3b8;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+      --white:#ffffff;--warn:#f59e0b;--warn-bg:#fffbeb;--warn-100:#fef3c7;--danger:#ef4444;--danger-bg:#fef2f2;--danger-100:#fee2e2;--blue-100:#dbeafe;--blue-600:#2563eb;
+      --radius:18px;--radius-sm:12px;--radius-xs:8px;
+      --font-display:'Syne',sans-serif;--font-body:'Instrument Sans',sans-serif;
+      --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+      --shadow-md:0 4px 6px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.08);
+      --shadow-teal:0 8px 30px rgba(20,184,166,.2);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-body);background:#f0f4f8;color:var(--slate-900);-webkit-font-smoothing:antialiased;min-height:100vh;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--teal-300);border-radius:3px;}
+    .app{display:flex;min-height:100vh;}
+    .main{margin-left:260px;flex:1;display:flex;flex-direction:column;}
+
+    /* SIDEBAR (same as other pages) */
+    .sidebar{width:260px;background:var(--teal-900);min-height:100vh;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:200;overflow:hidden;}
+    .sidebar::before{content:'';position:absolute;top:-100px;right:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.12),transparent 65%);pointer-events:none;}
+    .sidebar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,rgba(2,15,14,.6),transparent);pointer-events:none;}
+    .sidebar-inner{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;}
+    .sidebar-top{padding:28px 20px 16px;flex:1;overflow-y:auto;}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:32px;padding:0 4px;}
+    .brand-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal-500),var(--teal-700));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(20,184,166,.4);}
+    .brand-name{font-family:var(--font-display);font-size:20px;font-weight:800;color:white;letter-spacing:-0.3px;}
+    .brand-name span{color:var(--teal-400);}
+    .nav-section-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;margin:20px 0 6px;}
+    .nav-item{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:var(--radius-xs);font-size:13.5px;font-weight:500;color:rgba(255,255,255,.5);text-decoration:none;transition:all .18s;margin-bottom:2px;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+    .nav-item.active{background:linear-gradient(135deg,rgba(20,184,166,.22),rgba(20,184,166,.08));color:var(--teal-300);font-weight:600;box-shadow:inset 0 0 0 1px rgba(94,234,212,.15);}
+    .nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:var(--danger);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center;}
+    .nav-badge.teal{background:var(--teal-600);color:var(--teal-100);}
+    .sidebar-footer{padding:16px 20px;position:relative;z-index:2;}
+    .user-card{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .18s;}
+    .user-card:hover{background:rgba(255,255,255,.1);}
+    .user-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal-500),var(--teal-800));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
+    .user-name{font-size:13px;font-weight:600;color:white;}
+    .user-role{font-size:11px;color:var(--teal-400);margin-top:1px;}
+    .user-logout{margin-left:auto;color:rgba(255,255,255,.3);font-size:14px;cursor:pointer;}
+    .user-logout:hover{color:var(--danger);}
+
+    /* TOPBAR */
+    .topbar{background:var(--white);height:64px;border-bottom:1px solid var(--slate-200);padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar-left{display:flex;flex-direction:column;}
+    .topbar-title{font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--slate-900);}
+    .topbar-sub{font-size:11.5px;color:var(--slate-400);margin-top:1px;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .tb-btn{padding:9px 20px;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;border:none;}
+    .tb-primary{background:var(--teal-600);color:white;}
+    .tb-primary:hover{background:var(--teal-700);box-shadow:var(--shadow-teal);}
+    .tb-ghost{background:white;color:var(--slate-600);border:1px solid var(--slate-200);}
+    .tb-ghost:hover{border-color:var(--teal-400);color:var(--teal-600);}
+    .tb-icon{width:38px;height:38px;border-radius:var(--radius-xs);border:1px solid var(--slate-200);background:white;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;transition:all .18s;position:relative;}
+    .tb-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:var(--teal-500);border-radius:50%;border:2px solid white;}
+
+    /* PAGE */
+    .page{padding:28px 32px;animation:fadeUp .3s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* STAT STRIP */
+    .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .ss-card{background:white;border-radius:var(--radius);padding:20px 22px;border:1px solid var(--slate-100);display:flex;align-items:center;gap:16px;box-shadow:var(--shadow);transition:transform .2s;}
+    .ss-card:hover{transform:translateY(-2px);}
+    .ss-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .ss-teal{background:var(--teal-50);}
+    .ss-green{background:var(--green-100);}
+    .ss-warn{background:var(--warn-bg);}
+    .ss-danger{background:var(--danger-bg);}
+    .ss-val{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--slate-900);line-height:1;}
+    .ss-lbl{font-size:12px;color:var(--slate-400);margin-top:3px;font-weight:500;}
+
+    /* GRID */
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+
+    /* CARD */
+    .card{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);overflow:hidden;box-shadow:var(--shadow);}
+    .card-head{padding:18px 22px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .card-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--slate-900);}
+    .card-body{padding:20px 22px;}
+
+    /* GROUP SELECTOR */
+    .fi-sel{padding:8px 32px 8px 12px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;color:var(--slate-700);background:white;outline:none;transition:all .18s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+    .fi-sel:focus{border-color:var(--teal-500);}
+
+    /* PAYOUT STEPPER */
+    .stepper{display:flex;align-items:center;overflow-x:auto;padding:8px 0 16px;gap:0;}
+    .step{display:flex;flex-direction:column;align-items:center;min-width:90px;cursor:pointer;}
+    .step-dot{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;transition:transform .2s;position:relative;z-index:1;}
+    .step-dot:hover{transform:scale(1.1);}
+    .step.done    .step-dot{background:var(--teal-500);color:white;box-shadow:0 4px 12px rgba(20,184,166,.4);}
+    .step.current .step-dot{background:var(--teal-900);color:white;box-shadow:0 0 0 5px var(--teal-100);}
+    .step.next    .step-dot{background:var(--slate-100);color:var(--slate-400);border:2px dashed var(--slate-200);}
+    .step-name{font-size:11px;color:var(--slate-500);margin-top:8px;text-align:center;max-width:80px;line-height:1.4;}
+    .step.current .step-name{color:var(--teal-700);font-weight:700;}
+    .step.done    .step-name{color:var(--slate-400);}
+    .step-line{flex:1;height:2px;min-width:20px;margin-bottom:28px;}
+    .step-line.done{background:var(--teal-400);}
+    .step-line.next{background:var(--slate-200);}
+
+    /* CURRENT RECIPIENT BOX */
+    .recipient-box{background:linear-gradient(135deg,var(--teal-50),#ecfdf5);border:1px solid var(--teal-200);border-radius:var(--radius-sm);padding:20px;margin-top:4px;}
+    .rb-label{font-size:11px;font-weight:700;color:var(--teal-600);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+    .rb-name{font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--teal-900);margin-bottom:4px;}
+    .rb-meta{font-size:12.5px;color:var(--teal-700);margin-bottom:16px;}
+    .rb-actions{display:flex;gap:10px;}
+
+    /* CYCLE DOTS */
+    .cycle-dots{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px;}
+    .cdot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;cursor:pointer;transition:transform .15s;}
+    .cdot:hover{transform:scale(1.12);}
+    .cdot.paid   {background:var(--teal-500);color:white;}
+    .cdot.late   {background:var(--warn);color:white;}
+    .cdot.missed {background:var(--danger);color:white;}
+    .cdot.current{background:var(--teal-900);color:white;box-shadow:0 0 0 3px var(--teal-200);}
+    .cdot.future {background:var(--slate-100);color:var(--slate-400);border:2px dashed var(--slate-200);}
+
+    /* MEMBER STATUS LIST */
+    .mem-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--slate-50);}
+    .mem-item:last-child{border-bottom:none;}
+    .av{width:36px;height:36px;border-radius:50%;font-size:12px;font-weight:800;color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .mem-info{flex:1;}
+    .mem-name{font-size:13.5px;font-weight:600;color:var(--slate-900);}
+    .mem-sub{font-size:11.5px;color:var(--slate-400);margin-top:2px;}
+
+    /* PROGRESS */
+    .prog{height:7px;background:var(--slate-100);border-radius:4px;overflow:hidden;}
+    .prog-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+    .pf-teal{background:linear-gradient(90deg,var(--teal-600),var(--teal-400));}
+
+    /* TABLE */
+    .tbl-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{padding:11px 18px;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--slate-400);background:var(--slate-50);border-bottom:1px solid var(--slate-100);text-align:left;white-space:nowrap;}
+    tbody td{padding:14px 18px;font-size:13px;border-bottom:1px solid var(--slate-50);color:var(--slate-700);}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:var(--teal-50);}
+
+    /* BADGES */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge::before{content:'●';font-size:6px;}
+    .b-paid{background:var(--green-100);color:#15803d;}
+    .b-late{background:var(--warn-100);color:#92400e;}
+    .b-missed{background:var(--danger-100);color:#b91c1c;}
+    .b-pending{background:var(--blue-100);color:#1d4ed8;}
+    .b-released{background:var(--teal-100);color:var(--teal-700);}
+    .b-overdue{background:var(--danger-100);color:#b91c1c;}
+
+    /* EMPTY */
+    .empty{padding:40px 20px;text-align:center;}
+    .empty-icon{font-size:36px;margin-bottom:12px;opacity:.4;}
+    .empty-title{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--slate-500);margin-bottom:5px;}
+    .empty-sub{font-size:13px;color:var(--slate-400);}
+
+    /* SPINNER */
+    .spinner{width:22px;height:22px;border:2.5px solid var(--slate-200);border-top-color:var(--teal-500);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-box{padding:40px;display:flex;align-items:center;justify-content:center;}
+
+    /* UPCOMING CARD */
+    .upcoming-item{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:var(--radius-sm);border:1px solid var(--slate-100);background:var(--slate-50);margin-bottom:10px;transition:all .18s;cursor:pointer;}
+    .upcoming-item:hover{border-color:var(--teal-300);background:var(--teal-50);}
+    .upcoming-item:last-child{margin-bottom:0;}
+    .upcoming-item.highlight{background:var(--teal-50);border-color:var(--teal-200);}
+    .ui-ico{width:38px;height:38px;border-radius:50%;background:var(--teal-100);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .ui-name{font-size:13.5px;font-weight:700;color:var(--slate-900);}
+    .ui-sub{font-size:11.5px;color:var(--slate-400);margin-top:2px;}
+    .ui-date{font-size:12px;font-weight:700;color:var(--teal-600);}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-icon">🌿</div>
+          <div class="brand-name">Paluwag<span>AN</span></div>
+        </div>
+        <div class="nav-section-label">Overview</div>
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">⊞</span>Dashboard</a>
+        <div class="nav-section-label">Transactions</div>
+        <a href="contributions.html" class="nav-item"><span class="nav-icon">💳</span>Contributions<span class="nav-badge teal" id="badge-contrib">0</span></a>
+        <a href="payouts.html" class="nav-item active"><span class="nav-icon">📅</span>Payout Schedule</a>
+        <div class="nav-section-label">Management</div>
+        <a href="members.html" class="nav-item"><span class="nav-icon">👥</span>Members</a>
+        <a href="groups.html" class="nav-item"><span class="nav-icon">🏘</span>Groups</a>
+        <a href="penalties.html" class="nav-item"><span class="nav-icon">⚠️</span>Penalties<span class="nav-badge" id="badge-penalty">0</span></a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-av" id="userInitials">--</div>
+          <div><div class="user-name" id="userName">Loading...</div><div class="user-role" id="userRole">Member</div></div>
+          <div class="user-logout" onclick="doLogout()" title="Sign out">⎋</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Payout Schedule</div>
+        <div class="topbar-sub">Manage rotation and track who receives the pot</div>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-icon">🔔<div class="tb-dot"></div></div>
+        <button class="tb-btn tb-ghost" onclick="window.location.href='contributions.html'">View Contributions</button>
+        <button class="tb-btn tb-primary" onclick="window.location.href='contributions.html'">+ Record Payment</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- STAT STRIP -->
+      <div class="stat-strip">
+        <div class="ss-card">
+          <div class="ss-ico ss-teal">📅</div>
+          <div><div class="ss-val" id="sTotal">—</div><div class="ss-lbl">Total Schedules</div></div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-ico ss-green">✅</div>
+          <div><div class="ss-val" id="sReleased">—</div><div class="ss-lbl">Released</div></div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-ico ss-warn">⏳</div>
+          <div><div class="ss-val" id="sPending">—</div><div class="ss-lbl">Pending</div></div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-ico ss-danger">🚨</div>
+          <div><div class="ss-val" id="sOverdue">—</div><div class="ss-lbl">Overdue</div></div>
+        </div>
+      </div>
+
+      <div class="g2" style="margin-bottom:20px;">
+
+        <!-- LEFT: ROTATION + CYCLE STATUS -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <!-- Rotation tracker -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">🔄 Payout Rotation</span>
+              <select class="fi-sel" id="groupSelect" onchange="loadRotation()" style="min-width:160px;">
+                <option value="">Select group...</option>
+              </select>
+            </div>
+            <div class="card-body">
+              <div id="stepperWrap">
+                <div class="empty">
+                  <div class="empty-icon">🏘</div>
+                  <div class="empty-title">No group selected</div>
+                  <div class="empty-sub">Select a paluwagan group above to view the payout rotation.</div>
+                </div>
+              </div>
+              <div id="recipientBox" style="display:none;">
+                <div class="recipient-box">
+                  <div class="rb-label">📍 Current Recipient</div>
+                  <div class="rb-name" id="rbName">—</div>
+                  <div class="rb-meta" id="rbMeta">—</div>
+                  <div class="rb-actions">
+                    <button class="tb-btn tb-primary" style="font-size:12.5px;padding:9px 18px;" onclick="releasePayout()">✓ Mark as Released</button>
+                    <button class="tb-btn tb-ghost"   style="font-size:12.5px;padding:9px 18px;" onclick="loadRotation()">↺ Refresh</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cycle status -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">📊 Contribution Status</span>
+              <span id="cycleLabel" style="font-size:12px;color:var(--slate-400);font-weight:600;"></span>
+            </div>
+            <div class="card-body" id="cycleBody">
+              <div class="empty">
+                <div class="empty-icon">💳</div>
+                <div class="empty-title">No cycle data</div>
+                <div class="empty-sub">Select a group to view contribution status.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: TABLE + UPCOMING -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <!-- Payout table -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">All Payout Schedules</span>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Recipient</th>
+                    <th>Group</th>
+                    <th>Cycle</th>
+                    <th>Amount</th>
+                    <th>Scheduled</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="payoutTable">
+                  <tr><td colspan="6"><div class="loading-box"><div class="spinner"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Upcoming payouts -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">⏰ Upcoming Payouts</span>
+            </div>
+            <div class="card-body" id="upcomingList" style="padding:16px;">
+              <div class="loading-box"><div class="spinner"></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+  let currentPayoutId = null
+  const ic  = n => (n||'').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)||'?'
+  const colors = ['#0d9488','#115e59','#0369a1','#7c3aed','#b45309','#15803d','#be185d','#0891b2']
+  const col = n => { let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))&0xff; return colors[h%colors.length] }
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) : '—'
+
+  async function init() {
+    await requireAuth()
+    loadUser()
+    await Promise.all([loadGroups(), loadPayoutTable(), loadUpcoming(), loadStats()])
+  }
+
+  async function loadUser() {
+    const user = await getCurrentUser(); if (!user) return
+    const { data } = await db.from('system_user').select('role, member:member_id(full_name)').eq('user_id', user.id).maybeSingle()
+    const name = data?.member?.full_name || user.email?.split('@')[0] || 'User'
+    document.getElementById('userName').textContent = name
+    document.getElementById('userRole').textContent = data?.role || 'Member'
+    document.getElementById('userInitials').textContent = ic(name)
+  }
+
+  async function doLogout() { await db.auth.signOut(); window.location.href = '../index.html' }
+
+  async function loadStats() {
+    const { data } = await db.from('payout_schedule').select('payout_status')
+    if (!data) return
+    const total    = data.length
+    const released = data.filter(p=>p.payout_status==='RELEASED').length
+    const pending  = data.filter(p=>p.payout_status==='PENDING').length
+    const overdue  = data.filter(p=>p.payout_status==='OVERDUE').length
+    document.getElementById('sTotal').textContent    = total
+    document.getElementById('sReleased').textContent = released
+    document.getElementById('sPending').textContent  = pending
+    document.getElementById('sOverdue').textContent  = overdue
+  }
+
+  async function loadGroups() {
+    const { data } = await db.from('paluwagan_group').select('group_id, group_name').eq('status','ONGOING')
+    const sel = document.getElementById('groupSelect')
+    sel.innerHTML = '<option value="">Select group...</option>'
+    data?.forEach(g => sel.innerHTML += `<option value="${g.group_id}">${g.group_name}</option>`)
+    if (data?.length) { sel.value = data[0].group_id; await loadRotation() }
+  }
+
+  async function loadRotation() {
+    const groupId = document.getElementById('groupSelect').value
+    if (!groupId) return
+    const wrap = document.getElementById('stepperWrap')
+    const rbox = document.getElementById('recipientBox')
+    wrap.innerHTML = '<div class="loading-box"><div class="spinner"></div></div>'
+    rbox.style.display = 'none'
+
+    const [{ data: members }, { data: released }] = await Promise.all([
+      db.from('group_member').select('payout_order, member:member_id(member_id, full_name)').eq('group_id', groupId).order('payout_order'),
+      db.from('payout_schedule').select('cycle_number').eq('group_id', groupId).eq('payout_status','RELEASED').order('cycle_number', { ascending: false }).limit(1)
+    ])
+
+    const lastReleased = released?.[0]?.cycle_number || 0
+    const currentCycle = lastReleased + 1
+
+    const { data: pending } = await db.from('payout_schedule')
+      .select('*, member:member_id(full_name)')
+      .eq('group_id', groupId).eq('cycle_number', currentCycle)
+      .maybeSingle()
+
+    if (!members?.length) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">No members</div><div class="empty-sub">Add members to this group first.</div></div>'
+      return
+    }
+
+    // Build stepper
+    let html = '<div class="stepper">'
+    members.forEach((m, i) => {
+      const order = m.payout_order
+      const state = order < currentCycle ? 'done' : order === currentCycle ? 'current' : 'next'
+      const icon  = state === 'done' ? '✓' : order
+      html += `<div class="step ${state}"><div class="step-dot">${icon}</div><div class="step-name">${m.member?.full_name||'?'}</div></div>`
+      if (i < members.length - 1) html += `<div class="step-line ${state === 'done' ? 'done' : 'next'}"></div>`
+    })
+    html += '</div>'
+    wrap.innerHTML = html
+
+    if (pending) {
+      currentPayoutId = pending.payout_id
+      document.getElementById('rbName').textContent = pending.member?.full_name || '—'
+      document.getElementById('rbMeta').textContent =
+        `Cycle ${currentCycle} · Scheduled ${fmtDate(pending.scheduled_date)} · ₱${Number(pending.amount_released||0).toLocaleString()}`
+      rbox.style.display = 'block'
+    }
+
+    await loadCycleStatus(groupId, currentCycle, members)
+  }
+
+  async function loadCycleStatus(groupId, cycle, members) {
+    const { data: txns } = await db.from('contribution_txn')
+      .select('member_id, payment_status, date_paid, payment_method')
+      .eq('group_id', groupId).eq('cycle_number', cycle)
+
+    const txnMap = {}; txns?.forEach(t => txnMap[t.member_id] = t)
+    const paid = members.filter(m => txnMap[m.member?.member_id]?.payment_status === 'PAID').length
+    const total = members.length
+    const pct = total ? Math.round((paid/total)*100) : 0
+
+    document.getElementById('cycleLabel').textContent = `Cycle ${cycle} · ${paid}/${total} paid`
+
+    const dotColors = {
+      PAID:   'background:var(--teal-500);color:white;',
+      LATE:   'background:var(--warn);color:white;',
+      MISSED: 'background:var(--danger);color:white;',
+    }
+    const bdg = { PAID:'b-paid', LATE:'b-late', MISSED:'b-missed' }
+
+    document.getElementById('cycleBody').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:12.5px;color:var(--slate-500);">${paid} of ${total} members paid for Cycle ${cycle}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--teal-600);">${pct}%</span>
+      </div>
+      <div class="prog mb-16" style="margin-bottom:16px;"><div class="prog-fill pf-teal" style="width:${pct}%;"></div></div>
+      <div class="cycle-dots">
+        ${members.map(m => {
+          const txn = txnMap[m.member?.member_id]
+          const st  = txn?.payment_status
+          const s   = dotColors[st] || 'background:var(--slate-100);color:var(--slate-400);border:2px dashed var(--slate-200);'
+          return `<div class="cdot" style="${s}" title="${m.member?.full_name}: ${st||'NO PAYMENT'}">${m.payout_order}</div>`
+        }).join('')}
+      </div>
+      ${members.map(m => {
+        const txn = txnMap[m.member?.member_id]
+        const st  = txn?.payment_status
+        return `<div class="mem-item">
+          <div class="av" style="background:${col(m.member?.full_name)}">${ic(m.member?.full_name)}</div>
+          <div class="mem-info">
+            <div class="mem-name">${m.member?.full_name||'—'}</div>
+            <div class="mem-sub">${txn ? fmtDate(txn.date_paid) + ' · ' + (txn.payment_method||'—') : 'No payment recorded'}</div>
+          </div>
+          <span class="badge ${bdg[st]||'b-missed'}">${st||'MISSING'}</span>
+        </div>`
+      }).join('')}`
+  }
+
+  async function loadPayoutTable() {
+    const { data } = await db.from('payout_schedule')
+      .select('*, member:member_id(full_name), group:group_id(group_name)')
+      .order('cycle_number', { ascending: true }).limit(20)
+
+    const tbody = document.getElementById('payoutTable')
+    const bMap  = { PENDING:'b-pending', RELEASED:'b-released', OVERDUE:'b-overdue' }
+
+    if (!data?.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No payout records yet</div><div class="empty-sub">Payout schedules will appear once groups are created.</div></div></td></tr>`
+      return
+    }
+    tbody.innerHTML = data.map(p => `
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:10px;">
+          <div class="av" style="background:${col(p.member?.full_name)};width:32px;height:32px;font-size:11px;">${ic(p.member?.full_name)}</div>
+          <strong>${p.member?.full_name||'—'}</strong>
+        </div></td>
+        <td style="color:var(--slate-500);font-size:12.5px;">${p.group?.group_name||'—'}</td>
+        <td><span style="font-family:var(--font-display);font-weight:800;">C${p.cycle_number}</span></td>
+        <td><span style="font-family:var(--font-display);font-weight:800;">₱${Number(p.amount_released||0).toLocaleString()}</span></td>
+        <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(p.scheduled_date)}</td>
+        <td><span class="badge ${bMap[p.payout_status]||'b-pending'}">${p.payout_status}</span></td>
+      </tr>`).join('')
+  }
+
+  async function loadUpcoming() {
+    const { data } = await db.from('payout_schedule')
+      .select('*, member:member_id(full_name), group:group_id(group_name)')
+      .in('payout_status',['PENDING','OVERDUE'])
+      .order('scheduled_date', { ascending: true }).limit(4)
+
+    const el = document.getElementById('upcomingList')
+    if (!data?.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-icon">🎉</div><div class="empty-title">All clear!</div><div class="empty-sub">No pending or overdue payouts right now.</div></div>`
+      return
+    }
+    el.innerHTML = data.map((p, i) => `
+      <div class="upcoming-item ${i===0?'highlight':''}">
+        <div class="ui-ico">${p.payout_status==='OVERDUE'?'🚨':'📅'}</div>
+        <div style="flex:1;">
+          <div class="ui-name">${p.member?.full_name||'—'}</div>
+          <div class="ui-sub">${p.group?.group_name||'—'} · Cycle ${p.cycle_number} · ₱${Number(p.amount_released||0).toLocaleString()}</div>
+        </div>
+        <div class="ui-date">${fmtDate(p.scheduled_date)}</div>
+      </div>`).join('')
+  }
+
+  async function releasePayout() {
+    if (!currentPayoutId) return
+    if (!confirm('Mark this payout as released?')) return
+    await db.from('payout_schedule').update({ payout_status:'RELEASED', actual_date: new Date().toISOString().split('T')[0] }).eq('payout_id', currentPayoutId)
+    await Promise.all([loadRotation(), loadPayoutTable(), loadUpcoming(), loadStats()])
+  }
+
+  init()
+</script>
+</body>
+</html>

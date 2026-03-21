@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PaluwagAN — Contributions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal-900:#042f2e;--teal-800:#134e4a;--teal-700:#115e59;--teal-600:#0d9488;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;--teal-100:#ccfbf1;--teal-50:#f0fdfa;
+      --green-500:#22c55e;--green-100:#dcfce7;
+      --slate-900:#0f172a;--slate-700:#334155;--slate-500:#64748b;--slate-400:#94a3b8;--slate-300:#cbd5e1;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+      --white:#ffffff;--warn:#f59e0b;--warn-bg:#fffbeb;--warn-100:#fef3c7;--danger:#ef4444;--danger-bg:#fef2f2;--danger-100:#fee2e2;--blue-100:#dbeafe;--blue-600:#2563eb;
+      --radius:18px;--radius-sm:12px;--radius-xs:8px;
+      --font-display:'Syne',sans-serif;--font-body:'Instrument Sans',sans-serif;
+      --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+      --shadow-md:0 4px 6px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.08);
+      --shadow-teal:0 8px 30px rgba(20,184,166,.2);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-body);background:#f0f4f8;color:var(--slate-900);-webkit-font-smoothing:antialiased;min-height:100vh;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--teal-300);border-radius:3px;}
+
+    .app{display:flex;min-height:100vh;}
+    .main{margin-left:260px;flex:1;display:flex;flex-direction:column;}
+
+    /* SIDEBAR */
+    .sidebar{width:260px;background:var(--teal-900);min-height:100vh;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:200;overflow:hidden;}
+    .sidebar::before{content:'';position:absolute;top:-100px;right:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.12),transparent 65%);pointer-events:none;}
+    .sidebar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,rgba(2,15,14,.6),transparent);pointer-events:none;}
+    .sidebar-inner{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;}
+    .sidebar-top{padding:28px 20px 16px;flex:1;overflow-y:auto;}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:32px;padding:0 4px;}
+    .brand-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal-500),var(--teal-700));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(20,184,166,.4);}
+    .brand-name{font-family:var(--font-display);font-size:20px;font-weight:800;color:white;letter-spacing:-0.3px;}
+    .brand-name span{color:var(--teal-400);}
+    .nav-section-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;margin:20px 0 6px;}
+    .nav-item{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:var(--radius-xs);font-size:13.5px;font-weight:500;color:rgba(255,255,255,.5);text-decoration:none;transition:all .18s;margin-bottom:2px;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+    .nav-item.active{background:linear-gradient(135deg,rgba(20,184,166,.22),rgba(20,184,166,.08));color:var(--teal-300);font-weight:600;box-shadow:inset 0 0 0 1px rgba(94,234,212,.15);}
+    .nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:var(--danger);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center;}
+    .nav-badge.teal{background:var(--teal-600);color:var(--teal-100);}
+    .sidebar-footer{padding:16px 20px;position:relative;z-index:2;}
+    .user-card{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .18s;}
+    .user-card:hover{background:rgba(255,255,255,.1);}
+    .user-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal-500),var(--teal-800));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
+    .user-name{font-size:13px;font-weight:600;color:white;}
+    .user-role{font-size:11px;color:var(--teal-400);margin-top:1px;}
+    .user-logout{margin-left:auto;color:rgba(255,255,255,.3);font-size:14px;cursor:pointer;}
+    .user-logout:hover{color:var(--danger);}
+
+    /* TOPBAR */
+    .topbar{background:var(--white);height:64px;border-bottom:1px solid var(--slate-200);padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar-left{display:flex;flex-direction:column;}
+    .topbar-title{font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--slate-900);}
+    .topbar-sub{font-size:11.5px;color:var(--slate-400);margin-top:1px;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .tb-btn{padding:9px 20px;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;border:none;}
+    .tb-primary{background:var(--teal-600);color:white;}
+    .tb-primary:hover{background:var(--teal-700);box-shadow:var(--shadow-teal);transform:translateY(-1px);}
+    .tb-ghost{background:white;color:var(--slate-600);border:1px solid var(--slate-200);}
+    .tb-ghost:hover{border-color:var(--teal-400);color:var(--teal-600);}
+    .tb-icon{width:38px;height:38px;border-radius:var(--radius-xs);border:1px solid var(--slate-200);background:white;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;transition:all .18s;position:relative;}
+    .tb-icon:hover{border-color:var(--teal-400);}
+    .tb-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:var(--teal-500);border-radius:50%;border:2px solid white;}
+
+    /* PAGE */
+    .page{padding:28px 32px;animation:fadeUp .3s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* STAT STRIP */
+    .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .ss-card{background:white;border-radius:var(--radius);padding:20px 22px;border:1px solid var(--slate-100);display:flex;align-items:center;gap:16px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;}
+    .ss-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+    .ss-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .ss-teal{background:var(--teal-50);}
+    .ss-green{background:var(--green-100);}
+    .ss-warn{background:var(--warn-bg);}
+    .ss-danger{background:var(--danger-bg);}
+    .ss-val{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--slate-900);line-height:1;}
+    .ss-lbl{font-size:12px;color:var(--slate-400);margin-top:3px;font-weight:500;}
+
+    /* FILTER BAR */
+    .filter-bar{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:var(--shadow);}
+    .fi{padding:9px 13px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;color:var(--slate-900);background:white;outline:none;transition:all .18s;}
+    .fi:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(20,184,166,.12);}
+    .fi-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:32px;}
+    .fi-search{min-width:220px;padding-left:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center;}
+
+    /* CHIP TABS */
+    .chip-row{display:flex;gap:8px;margin-bottom:18px;}
+    .chip{padding:7px 18px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--slate-200);background:white;color:var(--slate-500);transition:all .15s;display:flex;align-items:center;gap:6px;}
+    .chip:hover{border-color:var(--teal-400);color:var(--teal-600);}
+    .chip.active{background:var(--teal-600);color:white;border-color:var(--teal-600);box-shadow:0 4px 12px rgba(13,148,136,.3);}
+    .chip-count{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,.25);}
+    .chip:not(.active) .chip-count{background:var(--slate-100);color:var(--slate-500);}
+
+    /* CARD */
+    .card{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);overflow:hidden;box-shadow:var(--shadow);}
+    .card-head{padding:18px 22px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between;}
+    .card-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--slate-900);}
+
+    /* TABLE */
+    .tbl-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{padding:11px 18px;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--slate-400);background:var(--slate-50);border-bottom:1px solid var(--slate-100);text-align:left;white-space:nowrap;}
+    tbody td{padding:14px 18px;font-size:13px;border-bottom:1px solid var(--slate-50);color:var(--slate-700);}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr{transition:background .12s;}
+    tbody tr:hover td{background:var(--teal-50);cursor:pointer;}
+
+    /* BADGES */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge::before{content:'●';font-size:6px;}
+    .b-paid{background:var(--green-100);color:#15803d;}
+    .b-late{background:var(--warn-100);color:#92400e;}
+    .b-missed{background:var(--danger-100);color:#b91c1c;}
+    .b-pending{background:var(--blue-100);color:#1d4ed8;}
+
+    /* METHOD PILL */
+    .pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .pill-cash{background:var(--slate-100);color:var(--slate-600);}
+    .pill-gcash{background:#faf5ff;color:#7c3aed;}
+    .pill-bank{background:var(--blue-100);color:#1d4ed8;}
+
+    /* AVATAR */
+    .av-row{display:flex;align-items:center;gap:10px;}
+    .av{width:34px;height:34px;border-radius:50%;font-size:12px;font-weight:800;color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+    /* MODAL */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    .modal-bg.open{display:flex;}
+    .modal{background:white;border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalIn .25s ease;}
+    @keyframes modalIn{from{opacity:0;transform:scale(.96)translateY(10px);}to{opacity:1;transform:scale(1)translateY(0);}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .modal-title{font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--slate-900);}
+    .modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--slate-200);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--slate-400);transition:all .15s;}
+    .modal-close:hover{border-color:var(--danger);color:var(--danger);}
+    .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--slate-100);}
+    .fg{margin-bottom:16px;}
+    .fl{display:block;font-size:11px;font-weight:700;color:var(--slate-500);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+    .form-input{width:100%;padding:10px 13px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13.5px;color:var(--slate-900);background:white;outline:none;transition:all .18s;}
+    .form-input:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(20,184,166,.12);}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .alert{padding:11px 14px;border-radius:var(--radius-xs);font-size:13px;margin-bottom:16px;display:none;}
+    .alert.show{display:block;}
+    .alert-error{background:var(--danger-bg);color:#b91c1c;border:1px solid #fecaca;}
+    .alert-success{background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-200);}
+
+    /* EMPTY */
+    .empty{padding:48px 20px;text-align:center;}
+    .empty-icon{font-size:40px;margin-bottom:14px;opacity:.4;}
+    .empty-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--slate-500);margin-bottom:5px;}
+    .empty-sub{font-size:13px;color:var(--slate-400);}
+
+    /* SPINNER */
+    .spinner{width:22px;height:22px;border:2.5px solid var(--slate-200);border-top-color:var(--teal-500);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-box{padding:40px;display:flex;align-items:center;justify-content:center;}
+
+    /* RECORD COUNT BADGE */
+    .count-info{font-size:12.5px;color:var(--slate-500);display:flex;gap:12px;align-items:center;}
+    .count-info strong{color:var(--slate-700);font-weight:700;}
+    .count-dot{width:4px;height:4px;border-radius:50%;background:var(--slate-300);}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-icon">🌿</div>
+          <div class="brand-name">Paluwag<span>AN</span></div>
+        </div>
+        <div class="nav-section-label">Overview</div>
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">⊞</span>Dashboard</a>
+        <div class="nav-section-label">Transactions</div>
+        <a href="contributions.html" class="nav-item active"><span class="nav-icon">💳</span>Contributions<span class="nav-badge teal" id="badge-contrib">0</span></a>
+        <a href="payouts.html" class="nav-item"><span class="nav-icon">📅</span>Payout Schedule</a>
+        <div class="nav-section-label">Management</div>
+        <a href="members.html" class="nav-item"><span class="nav-icon">👥</span>Members</a>
+        <a href="groups.html" class="nav-item"><span class="nav-icon">🏘</span>Groups</a>
+        <a href="penalties.html" class="nav-item"><span class="nav-icon">⚠️</span>Penalties<span class="nav-badge" id="badge-penalty">0</span></a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-av" id="userInitials">--</div>
+          <div><div class="user-name" id="userName">Loading...</div><div class="user-role" id="userRole">Member</div></div>
+          <div class="user-logout" onclick="doLogout()" title="Sign out">⎋</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Contributions</div>
+        <div class="topbar-sub">Track and record all member payments</div>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-icon">🔔<div class="tb-dot"></div></div>
+        <button class="tb-btn tb-ghost" onclick="exportCSV()">⬇ Export</button>
+        <button class="tb-btn tb-primary" onclick="openModal()">+ Record Payment</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- STAT STRIP -->
+      <div class="stat-strip">
+        <div class="ss-card">
+          <div class="ss-ico ss-teal">💰</div>
+          <div><div class="ss-val" id="sTotalAmt">—</div><div class="ss-lbl">Total Collected</div></div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-ico ss-green">✅</div>
+          <div><div class="ss-val" id="sPaid">—</div><div class="ss-lbl">Paid on Time</div></div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-ico ss-warn">⏰</div>
+          <div><div class="ss-val" id="sLate">—</div><div class="ss-lbl">Late Payments</div></div>
+        </div>
+        <div class="ss-card">
+          <div class="ss-ico ss-danger">❌</div>
+          <div><div class="ss-val" id="sMissed">—</div><div class="ss-lbl">Missed Payments</div></div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <input class="fi fi-search" style="min-width:220px;" id="searchInput" placeholder="Search member name..." oninput="filterTable()"/>
+        <select class="fi fi-sel" style="min-width:170px;" id="groupFilter" onchange="filterTable()">
+          <option value="">All Groups</option>
+        </select>
+        <select class="fi fi-sel" style="min-width:140px;" id="cycleFilter" onchange="filterTable()">
+          <option value="">All Cycles</option>
+        </select>
+        <div style="margin-left:auto;">
+          <button class="tb-btn tb-primary" onclick="openModal()">+ Record Payment</button>
+        </div>
+      </div>
+
+      <!-- CHIP FILTERS -->
+      <div class="chip-row">
+        <div class="chip active" data-status="" onclick="setChip(this)">All <span class="chip-count" id="cAll">0</span></div>
+        <div class="chip" data-status="PAID"   onclick="setChip(this)">✅ Paid   <span class="chip-count" id="cPaid">0</span></div>
+        <div class="chip" data-status="LATE"   onclick="setChip(this)">⏰ Late   <span class="chip-count" id="cLate">0</span></div>
+        <div class="chip" data-status="MISSED" onclick="setChip(this)">❌ Missed <span class="chip-count" id="cMissed">0</span></div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Contribution Transactions</span>
+          <div class="count-info">
+            <span id="countLabel">Loading...</span>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Group</th>
+                <th>Cycle</th>
+                <th>Amount</th>
+                <th>Date Paid</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="txnTable">
+              <tr><td colspan="8"><div class="loading-box"><div class="spinner"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- RECORD PAYMENT MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">💳 Record Payment</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="alert alert-error" id="modalErr"></div>
+    <div class="alert alert-success" id="modalOk"></div>
+    <div class="fg">
+      <label class="fl">Member</label>
+      <select class="form-input" id="mMember" style="appearance:none;"></select>
+    </div>
+    <div class="fg">
+      <label class="fl">Group</label>
+      <select class="form-input" id="mGroup" style="appearance:none;"></select>
+    </div>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="fl">Cycle Number</label>
+        <input class="form-input" type="number" id="mCycle" min="1" value="1"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Amount (₱)</label>
+        <input class="form-input" type="number" id="mAmount" placeholder="1000" min="0"/>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="fl">Date Paid</label>
+        <input class="form-input" type="date" id="mDate"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Payment Method</label>
+        <select class="form-input" id="mMethod" style="appearance:none;">
+          <option value="CASH">💵 Cash</option>
+          <option value="GCASH">📱 GCash</option>
+          <option value="BANK">🏦 Bank Transfer</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Payment Status</label>
+      <select class="form-input" id="mStatus" style="appearance:none;">
+        <option value="PAID">✅ Paid</option>
+        <option value="LATE">⏰ Late</option>
+        <option value="MISSED">❌ Missed</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn tb-ghost" onclick="closeModal()">Cancel</button>
+      <button class="tb-btn tb-primary" id="saveBtn" onclick="savePayment()">Save Payment</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+  let allTxns = [], activeChip = ''
+  const colors = ['#0d9488','#115e59','#0369a1','#7c3aed','#b45309','#15803d','#be185d','#0891b2']
+  const ic = n => (n||'').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)||'?'
+  const col = n => { let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))&0xff; return colors[h%colors.length] }
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) : '—'
+
+  async function init() {
+    await requireAuth()
+    loadUser()
+    document.getElementById('mDate').valueAsDate = new Date()
+    await Promise.all([loadGroups(), loadMembers(), loadTransactions()])
+  }
+
+  async function loadUser() {
+    const user = await getCurrentUser()
+    if (!user) return
+    const { data } = await db.from('system_user').select('role, member:member_id(full_name)').eq('user_id', user.id).maybeSingle()
+    const name = data?.member?.full_name || user.email?.split('@')[0] || 'User'
+    document.getElementById('userName').textContent     = name
+    document.getElementById('userRole').textContent     = data?.role || 'Member'
+    document.getElementById('userInitials').textContent = ic(name)
+  }
+
+  async function doLogout() { await db.auth.signOut(); window.location.href = '../index.html' }
+
+  async function loadTransactions() {
+    const { data } = await db
+      .from('contribution_txn')
+      .select('*, member:member_id(full_name), group:group_id(group_name)')
+      .order('date_paid', { ascending: false })
+    allTxns = data || []
+    updateChipCounts()
+    populateCycleFilter()
+    renderTable(allTxns)
+    updateStats(allTxns)
+    document.getElementById('badge-contrib').textContent = allTxns.length
+  }
+
+  function updateStats(data) {
+    const total  = data.reduce((s,t) => s + Number(t.amount_paid||0), 0)
+    const paid   = data.filter(t => t.payment_status === 'PAID').length
+    const late   = data.filter(t => t.payment_status === 'LATE').length
+    const missed = data.filter(t => t.payment_status === 'MISSED').length
+    document.getElementById('sTotalAmt').textContent = '₱' + total.toLocaleString()
+    document.getElementById('sPaid').textContent     = paid
+    document.getElementById('sLate').textContent     = late
+    document.getElementById('sMissed').textContent   = missed
+  }
+
+  function updateChipCounts() {
+    document.getElementById('cAll').textContent    = allTxns.length
+    document.getElementById('cPaid').textContent   = allTxns.filter(t=>t.payment_status==='PAID').length
+    document.getElementById('cLate').textContent   = allTxns.filter(t=>t.payment_status==='LATE').length
+    document.getElementById('cMissed').textContent = allTxns.filter(t=>t.payment_status==='MISSED').length
+  }
+
+  function populateCycleFilter() {
+    const cycles = [...new Set(allTxns.map(t=>t.cycle_number).filter(Boolean))].sort((a,b)=>a-b)
+    const sel = document.getElementById('cycleFilter')
+    sel.innerHTML = '<option value="">All Cycles</option>'
+    cycles.forEach(c => sel.innerHTML += `<option value="${c}">Cycle ${c}</option>`)
+  }
+
+  function renderTable(data) {
+    const tbody = document.getElementById('txnTable')
+    const total = data.reduce((s,t) => s + Number(t.amount_paid||0), 0)
+    document.getElementById('countLabel').innerHTML =
+      `<strong>${data.length}</strong> records &nbsp;·&nbsp; <strong style="color:var(--teal-600);">₱${total.toLocaleString()}</strong> total`
+
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon">💳</div><div class="empty-title">No transactions found</div><div class="empty-sub">Try adjusting your filters or record a new payment.</div></div></td></tr>`
+      return
+    }
+
+    const bdg    = { PAID:'b-paid', LATE:'b-late', MISSED:'b-missed' }
+    const pillCl = { CASH:'pill-cash', GCASH:'pill-gcash', BANK:'pill-bank' }
+
+    tbody.innerHTML = data.map(t => `
+      <tr>
+        <td>
+          <div class="av-row">
+            <div class="av" style="background:${col(t.member?.full_name)}">${ic(t.member?.full_name)}</div>
+            <div>
+              <div style="font-weight:700;font-size:13.5px;">${t.member?.full_name||'—'}</div>
+            </div>
+          </div>
+        </td>
+        <td style="color:var(--slate-500);font-size:12.5px;">${t.group?.group_name||'—'}</td>
+        <td><span style="font-family:var(--font-display);font-weight:700;font-size:13px;">C${t.cycle_number||'—'}</span></td>
+        <td><span style="font-family:var(--font-display);font-weight:800;font-size:14px;">₱${Number(t.amount_paid||0).toLocaleString()}</span></td>
+        <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(t.date_paid)}</td>
+        <td>${t.payment_method ? `<span class="pill ${pillCl[t.payment_method]||'pill-cash'}">${t.payment_method}</span>` : '<span style="color:var(--slate-300)">—</span>'}</td>
+        <td><span class="badge ${bdg[t.payment_status]||'b-paid'}">${t.payment_status||'—'}</span></td>
+        <td>
+          <button onclick="deleteRow(${t.transaction_id})"
+            style="padding:5px 10px;border:1px solid var(--slate-200);background:white;border-radius:6px;cursor:pointer;font-size:12px;color:var(--slate-400);transition:all .15s;"
+            onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'"
+            onmouseout="this.style.borderColor='var(--slate-200)';this.style.color='var(--slate-400)'">🗑</button>
+        </td>
+      </tr>`).join('')
+  }
+
+  function filterTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase()
+    const group  = document.getElementById('groupFilter').value
+    const cycle  = document.getElementById('cycleFilter').value
+    const status = activeChip
+
+    const filtered = allTxns.filter(t =>
+      (!search || (t.member?.full_name||'').toLowerCase().includes(search)) &&
+      (!group  || t.group_id == group) &&
+      (!cycle  || t.cycle_number == cycle) &&
+      (!status || t.payment_status === status)
+    )
+    renderTable(filtered)
+  }
+
+  function setChip(el) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'))
+    el.classList.add('active')
+    activeChip = el.dataset.status
+    filterTable()
+  }
+
+  async function loadGroups() {
+    const { data } = await db.from('paluwagan_group').select('group_id, group_name').eq('status','ONGOING')
+    const sel = document.getElementById('groupFilter')
+    const mSel = document.getElementById('mGroup')
+    sel.innerHTML  = '<option value="">All Groups</option>'
+    mSel.innerHTML = '<option value="">— Select group —</option>'
+    data?.forEach(g => {
+      sel.innerHTML  += `<option value="${g.group_id}">${g.group_name}</option>`
+      mSel.innerHTML += `<option value="${g.group_id}">${g.group_name}</option>`
+    })
+  }
+
+  async function loadMembers() {
+    const { data } = await db.from('member').select('member_id, full_name').eq('status','ACTIVE').order('full_name')
+    const sel = document.getElementById('mMember')
+    sel.innerHTML = '<option value="">— Select member —</option>'
+    data?.forEach(m => sel.innerHTML += `<option value="${m.member_id}">${m.full_name}</option>`)
+  }
+
+  function openModal()  { document.getElementById('modal').classList.add('open') }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open')
+    document.getElementById('modalErr').classList.remove('show')
+    document.getElementById('modalOk').classList.remove('show')
+  }
+
+  async function savePayment() {
+    const memberId = document.getElementById('mMember').value
+    const groupId  = document.getElementById('mGroup').value
+    const cycle    = document.getElementById('mCycle').value
+    const amount   = document.getElementById('mAmount').value
+    const date     = document.getElementById('mDate').value
+    const method   = document.getElementById('mMethod').value
+    const status   = document.getElementById('mStatus').value
+    const errEl    = document.getElementById('modalErr')
+    const okEl     = document.getElementById('modalOk')
+
+    errEl.classList.remove('show'); okEl.classList.remove('show')
+
+    if (!memberId || !groupId || !cycle || amount === '') {
+      errEl.textContent = 'Please fill in all required fields.'
+      errEl.classList.add('show'); return
+    }
+
+    const btn = document.getElementById('saveBtn')
+    btn.disabled = true; btn.textContent = 'Saving...'
+
+    const { data: txn, error } = await db.from('contribution_txn').insert({
+      member_id: parseInt(memberId), group_id: parseInt(groupId),
+      cycle_number: parseInt(cycle), amount_paid: parseFloat(amount)||0,
+      date_paid: date, payment_method: method, payment_status: status
+    }).select().single()
+
+    if (error) {
+      errEl.textContent = 'Error saving. Please try again.'
+      errEl.classList.add('show')
+      btn.disabled = false; btn.textContent = 'Save Payment'; return
+    }
+
+    if ((status === 'LATE' || status === 'MISSED') && txn) {
+      await db.from('penalty').insert({
+        transaction_id: txn.transaction_id,
+        member_id: parseInt(memberId), group_id: parseInt(groupId),
+        penalty_amount: status === 'MISSED' ? 100 : 50,
+        reason: status, penalty_status: 'UNPAID'
+      })
+    }
+
+    okEl.textContent = '✅ Payment recorded successfully!'
+    okEl.classList.add('show')
+    btn.disabled = false; btn.textContent = 'Save Payment'
+    setTimeout(() => { closeModal(); loadTransactions() }, 1200)
+  }
+
+  async function deleteRow(id) {
+    if (!confirm('Delete this transaction? This cannot be undone.')) return
+    await db.from('contribution_txn').delete().eq('transaction_id', id)
+    loadTransactions()
+  }
+
+  function exportCSV() {
+    const rows = [['Member','Group','Cycle','Amount','Date','Method','Status']]
+    allTxns.forEach(t => rows.push([
+      t.member?.full_name||'', t.group?.group_name||'',
+      t.cycle_number, t.amount_paid, t.date_paid||'', t.payment_method||'', t.payment_status||''
+    ]))
+    const csv = rows.map(r => r.join(',')).join('\n')
+    const a = document.createElement('a')
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+    a.download = 'contributions.csv'; a.click()
+  }
+
+  init()
+</script>
+</body>
+</html>

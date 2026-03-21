@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PaluwagAN — Sign In</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    body { display: flex; min-height: 100vh; }
+
+    .login-left {
+      width: 46%; background: var(--teal-900);
+      display: flex; flex-direction: column;
+      justify-content: center; padding: 64px 56px;
+      position: relative; overflow: hidden;
+    }
+    .login-left::before {
+      content: ''; position: absolute; top: -120px; right: -120px;
+      width: 400px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(45,212,191,.12), transparent 65%);
+    }
+    .login-left::after {
+      content: ''; position: absolute; bottom: -80px; left: -60px;
+      width: 280px; height: 280px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(20,184,166,.1), transparent 65%);
+    }
+    .lsl { position: relative; z-index: 1; }
+    .lsl-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--teal-400); margin-bottom: 16px; }
+    .lsl-title   { font-family: var(--font-display); font-size: 48px; font-weight: 800; color: white; line-height: 1.05; margin-bottom: 16px; }
+    .lsl-title span { color: var(--teal-400); }
+    .lsl-body    { font-size: 14px; color: rgba(255,255,255,.55); line-height: 1.7; max-width: 340px; margin-bottom: 36px; }
+    .lsl-feat    { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .lsl-dot     { width: 7px; height: 7px; border-radius: 50%; background: var(--teal-400); flex-shrink: 0; }
+    .lsl-text    { font-size: 13px; color: rgba(255,255,255,.65); font-weight: 500; }
+    .lsl-stats   { display: flex; gap: 28px; margin-top: 44px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.1); }
+    .lsl-sv      { font-family: var(--font-display); font-size: 24px; font-weight: 800; color: white; }
+    .lsl-sl      { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+    .login-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px; background: var(--slate-50); }
+    .login-form  { width: 100%; max-width: 380px; }
+    .lf-eyebrow  { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--teal-600); margin-bottom: 8px; }
+    .lf-title    { font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--slate-900); margin-bottom: 6px; }
+    .lf-sub      { font-size: 13.5px; color: var(--slate-500); margin-bottom: 28px; }
+
+    .role-row    { display: flex; gap: 6px; margin-bottom: 24px; }
+    .role-btn    { flex: 1; padding: 9px 8px; border: 1.5px solid var(--slate-200); border-radius: var(--radius-xs); font-family: var(--font-body); font-size: 12.5px; font-weight: 600; cursor: pointer; background: white; color: var(--slate-600); transition: all .18s; }
+    .role-btn:hover  { border-color: var(--teal-400); color: var(--teal-600); }
+    .role-btn.active { border-color: var(--teal-500); background: var(--teal-50); color: var(--teal-700); }
+
+    .lf-submit   { width: 100%; padding: 12px; background: var(--teal-600); color: white; border: none; border-radius: var(--radius-xs); font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 6px; }
+    .lf-submit:hover { background: var(--teal-700); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,148,136,.35); }
+    .lf-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .lf-forgot   { text-align: right; margin-top: 6px; }
+    .lf-forgot a { font-size: 12px; color: var(--teal-600); font-weight: 600; text-decoration: none; }
+    .lf-note     { font-size: 12px; color: var(--slate-400); text-align: center; margin-top: 22px; }
+    .lf-note a   { color: var(--teal-600); font-weight: 600; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="login-left">
+    <div class="lsl">
+      <div class="lsl-eyebrow">Community Savings · Philippines</div>
+      <div class="lsl-title">Paluwag<span>AN</span></div>
+      <div class="lsl-body">The smarter way to manage your rotating savings group — real-time contributions, automated payouts, and zero disputes.</div>
+      <div class="lsl-feat"><div class="lsl-dot"></div><div class="lsl-text">Track every contribution instantly</div></div>
+      <div class="lsl-feat"><div class="lsl-dot"></div><div class="lsl-text">Auto-generate payout schedules</div></div>
+      <div class="lsl-feat"><div class="lsl-dot"></div><div class="lsl-text">Penalties tracked automatically</div></div>
+      <div class="lsl-feat"><div class="lsl-dot"></div><div class="lsl-text">Full audit trail for every transaction</div></div>
+      <div class="lsl-stats">
+        <div><div class="lsl-sv" id="statGroups">—</div><div class="lsl-sl">Active Groups</div></div>
+        <div><div class="lsl-sv" id="statMembers">—</div><div class="lsl-sl">Members</div></div>
+        <div><div class="lsl-sv" id="statCollected">—</div><div class="lsl-sl">Collected</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="login-right">
+    <div class="login-form">
+      <div class="lf-eyebrow">Welcome back</div>
+      <div class="lf-title">Sign in</div>
+      <div class="lf-sub">Sign in to your PaluwagAN account.</div>
+
+      <!-- Error message -->
+      <div id="errorMsg" class="alert alert-error hidden"></div>
+
+      <div class="fg">
+        <label class="fl">Email</label>
+        <input class="fi" type="email" id="email" placeholder="you@email.com"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Password</label>
+        <input class="fi" type="password" id="password" placeholder="••••••••"/>
+        <div class="lf-forgot"><a href="#">Forgot password?</a></div>
+      </div>
+
+      <button class="lf-submit" id="loginBtn" onclick="handleLogin()">Sign In →</button>
+
+      <div class="lf-note">No account? <a href="#">Contact your organizer</a></div>
+    </div>
+  </div>
+
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Redirect if already logged in
+    redirectIfLoggedIn()
+
+    // Load public stats for the left panel
+    async function loadStats() {
+      const { count: groups }  = await db.from('paluwagan_group').select('*', { count: 'exact', head: true }).eq('status', 'ONGOING')
+      const { count: members } = await db.from('member').select('*', { count: 'exact', head: true }).eq('status', 'ACTIVE')
+      const { data: txns }     = await db.from('contribution_txn').select('amount_paid')
+
+      const total = txns?.reduce((sum, t) => sum + (t.amount_paid || 0), 0) || 0
+
+      document.getElementById('statGroups').textContent   = groups   || '—'
+      document.getElementById('statMembers').textContent  = members  || '—'
+      document.getElementById('statCollected').textContent = total >= 1000
+        ? '₱' + (total / 1000).toFixed(0) + 'k'
+        : '₱' + total
+    }
+    loadStats()
+
+    async function handleLogin() {
+      const email    = document.getElementById('email').value.trim()
+      const password = document.getElementById('password').value
+      const btn      = document.getElementById('loginBtn')
+      const errEl    = document.getElementById('errorMsg')
+
+      if (!email || !password) {
+        errEl.textContent = 'Please enter your email and password.'
+        errEl.classList.remove('hidden')
+        return
+      }
+
+      btn.disabled = true
+      btn.textContent = 'Signing in...'
+      errEl.classList.add('hidden')
+
+      try {
+        await signIn(email, password)
+        window.location.href = 'pages/dashboard.html'
+      } catch (err) {
+        errEl.textContent = 'Invalid email or password. Please try again.'
+        errEl.classList.remove('hidden')
+        btn.disabled = false
+        btn.textContent = 'Sign In →'
+      }
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleLogin()
+    })
+  </script>
+</body>
+</html>

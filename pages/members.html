@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PaluwagAN — Members</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal-900:#042f2e;--teal-800:#134e4a;--teal-700:#115e59;--teal-600:#0d9488;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;--teal-100:#ccfbf1;--teal-50:#f0fdfa;
+      --green-500:#22c55e;--green-100:#dcfce7;
+      --slate-900:#0f172a;--slate-700:#334155;--slate-500:#64748b;--slate-400:#94a3b8;--slate-300:#cbd5e1;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+      --white:#ffffff;--warn:#f59e0b;--warn-bg:#fffbeb;--warn-100:#fef3c7;--danger:#ef4444;--danger-bg:#fef2f2;--danger-100:#fee2e2;--blue-100:#dbeafe;
+      --radius:18px;--radius-sm:12px;--radius-xs:8px;
+      --font-display:'Syne',sans-serif;--font-body:'Instrument Sans',sans-serif;
+      --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+      --shadow-md:0 4px 6px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.08);
+      --shadow-teal:0 8px 30px rgba(20,184,166,.2);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-body);background:#f0f4f8;color:var(--slate-900);-webkit-font-smoothing:antialiased;min-height:100vh;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--teal-300);border-radius:3px;}
+    .app{display:flex;min-height:100vh;}
+    .main{margin-left:260px;flex:1;display:flex;flex-direction:column;}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:260px;background:var(--teal-900);min-height:100vh;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:200;overflow:hidden;}
+    .sidebar::before{content:'';position:absolute;top:-100px;right:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.12),transparent 65%);pointer-events:none;}
+    .sidebar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,rgba(2,15,14,.6),transparent);pointer-events:none;}
+    .sidebar-inner{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;}
+    .sidebar-top{padding:28px 20px 16px;flex:1;overflow-y:auto;}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:32px;padding:0 4px;}
+    .brand-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal-500),var(--teal-700));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(20,184,166,.4);}
+    .brand-name{font-family:var(--font-display);font-size:20px;font-weight:800;color:white;letter-spacing:-0.3px;}
+    .brand-name span{color:var(--teal-400);}
+    .nav-section-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;margin:20px 0 6px;}
+    .nav-item{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:var(--radius-xs);font-size:13.5px;font-weight:500;color:rgba(255,255,255,.5);text-decoration:none;transition:all .18s;margin-bottom:2px;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+    .nav-item.active{background:linear-gradient(135deg,rgba(20,184,166,.22),rgba(20,184,166,.08));color:var(--teal-300);font-weight:600;box-shadow:inset 0 0 0 1px rgba(94,234,212,.15);}
+    .nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:var(--danger);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center;}
+    .nav-badge.teal{background:var(--teal-600);color:var(--teal-100);}
+    .sidebar-footer{padding:16px 20px;position:relative;z-index:2;}
+    .user-card{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .18s;}
+    .user-card:hover{background:rgba(255,255,255,.1);}
+    .user-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal-500),var(--teal-800));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
+    .user-name{font-size:13px;font-weight:600;color:white;}
+    .user-role{font-size:11px;color:var(--teal-400);margin-top:1px;}
+    .user-logout{margin-left:auto;color:rgba(255,255,255,.3);font-size:14px;cursor:pointer;}
+    .user-logout:hover{color:var(--danger);}
+
+    /* ── TOPBAR ── */
+    .topbar{background:var(--white);height:64px;border-bottom:1px solid var(--slate-200);padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar-left{display:flex;flex-direction:column;}
+    .topbar-title{font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--slate-900);}
+    .topbar-sub{font-size:11.5px;color:var(--slate-400);margin-top:1px;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .tb-btn{padding:9px 20px;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;border:none;}
+    .tb-primary{background:var(--teal-600);color:white;}
+    .tb-primary:hover{background:var(--teal-700);box-shadow:var(--shadow-teal);transform:translateY(-1px);}
+    .tb-ghost{background:white;color:var(--slate-600);border:1px solid var(--slate-200);}
+    .tb-ghost:hover{border-color:var(--teal-400);color:var(--teal-600);}
+    .tb-danger{background:var(--danger);color:white;}
+    .tb-danger:hover{opacity:.9;}
+    .tb-icon{width:38px;height:38px;border-radius:var(--radius-xs);border:1px solid var(--slate-200);background:white;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;transition:all .18s;position:relative;}
+    .tb-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:var(--teal-500);border-radius:50%;border:2px solid white;}
+
+    /* ── PAGE ── */
+    .page{padding:28px 32px;animation:fadeUp .3s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* ── STAT STRIP ── */
+    .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .ss-card{background:white;border-radius:var(--radius);padding:20px 22px;border:1px solid var(--slate-100);display:flex;align-items:center;gap:16px;box-shadow:var(--shadow);transition:transform .2s;}
+    .ss-card:hover{transform:translateY(-2px);}
+    .ss-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .ss-teal{background:var(--teal-50);}
+    .ss-green{background:var(--green-100);}
+    .ss-warn{background:var(--warn-bg);}
+    .ss-danger{background:var(--danger-bg);}
+    .ss-val{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--slate-900);line-height:1;}
+    .ss-lbl{font-size:12px;color:var(--slate-400);margin-top:3px;font-weight:500;}
+
+    /* ── FILTER BAR ── */
+    .filter-bar{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:var(--shadow);}
+    .fi{padding:9px 13px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;color:var(--slate-900);background:white;outline:none;transition:all .18s;}
+    .fi:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(20,184,166,.12);}
+    .fi-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;}
+    .fi-search{min-width:240px;padding-left:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center;}
+
+    /* ── MEMBER GRID ── */
+    .member-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+    .member-card{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);padding:22px;box-shadow:var(--shadow);transition:all .2s;cursor:pointer;position:relative;overflow:hidden;}
+    .member-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--teal-200);}
+    .mc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+    .mc-av{width:52px;height:52px;border-radius:50%;font-size:18px;font-weight:800;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.2);}
+    .mc-actions{display:flex;gap:6px;opacity:0;transition:opacity .18s;}
+    .member-card:hover .mc-actions{opacity:1;}
+    .mc-action-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--slate-200);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;}
+    .mc-action-btn:hover{border-color:var(--teal-400);background:var(--teal-50);}
+    .mc-action-btn.del:hover{border-color:var(--danger);background:var(--danger-bg);}
+    .mc-name{font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--slate-900);margin-bottom:3px;}
+    .mc-contact{font-size:12.5px;color:var(--slate-400);margin-bottom:3px;display:flex;align-items:center;gap:5px;}
+    .mc-address{font-size:12px;color:var(--slate-400);margin-bottom:14px;display:flex;align-items:center;gap:5px;}
+    .mc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--slate-100);}
+    .mc-stat{text-align:center;}
+    .mc-stat-val{font-family:var(--font-display);font-size:15px;font-weight:800;color:var(--slate-900);}
+    .mc-stat-lbl{font-size:10px;color:var(--slate-400);font-weight:500;}
+    .mc-divider{width:1px;height:30px;background:var(--slate-100);}
+
+    /* ── TABLE VIEW ── */
+    .card{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);overflow:hidden;box-shadow:var(--shadow);}
+    .card-head{padding:18px 22px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between;}
+    .card-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--slate-900);}
+    .tbl-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{padding:11px 18px;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--slate-400);background:var(--slate-50);border-bottom:1px solid var(--slate-100);text-align:left;white-space:nowrap;}
+    tbody td{padding:14px 18px;font-size:13px;border-bottom:1px solid var(--slate-50);color:var(--slate-700);}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:var(--teal-50);}
+
+    /* ── BADGES ── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge::before{content:'●';font-size:6px;}
+    .b-active{background:var(--green-100);color:#15803d;}
+    .b-inactive{background:var(--slate-100);color:var(--slate-500);}
+
+    /* ── VIEW TOGGLE ── */
+    .view-toggle{display:flex;gap:4px;background:var(--slate-100);padding:4px;border-radius:8px;}
+    .vt-btn{padding:5px 10px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:16px;transition:all .15s;color:var(--slate-400);}
+    .vt-btn.active{background:white;color:var(--teal-600);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+
+    /* ── MODAL ── */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    .modal-bg.open{display:flex;}
+    .modal{background:white;border-radius:var(--radius);padding:32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalIn .25s ease;}
+    @keyframes modalIn{from{opacity:0;transform:scale(.96)translateY(10px);}to{opacity:1;transform:scale(1)translateY(0);}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .modal-title{font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--slate-900);}
+    .modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--slate-200);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--slate-400);transition:all .15s;}
+    .modal-close:hover{border-color:var(--danger);color:var(--danger);}
+    .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--slate-100);}
+    .fg{margin-bottom:16px;}
+    .fl{display:block;font-size:11px;font-weight:700;color:var(--slate-500);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+    .form-input{width:100%;padding:10px 13px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13.5px;color:var(--slate-900);background:white;outline:none;transition:all .18s;}
+    .form-input:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(20,184,166,.12);}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .alert{padding:11px 14px;border-radius:var(--radius-xs);font-size:13px;margin-bottom:16px;display:none;}
+    .alert.show{display:block;}
+    .alert-error{background:var(--danger-bg);color:#b91c1c;border:1px solid #fecaca;}
+    .alert-success{background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-100);}
+
+    /* ── PROFILE DRAWER ── */
+    .drawer-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:900;backdrop-filter:blur(2px);}
+    .drawer-bg.open{display:block;}
+    .drawer{position:fixed;right:0;top:0;bottom:0;width:400px;background:white;z-index:901;box-shadow:-8px 0 40px rgba(0,0,0,.12);animation:slideIn .25s ease;overflow-y:auto;}
+    @keyframes slideIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
+    .drawer-head{padding:24px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:white;z-index:1;}
+    .drawer-body{padding:24px;}
+    .profile-banner{background:linear-gradient(135deg,var(--teal-900),var(--teal-700));border-radius:var(--radius-sm);padding:24px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+    .profile-av{width:60px;height:60px;border-radius:50%;font-size:22px;font-weight:800;color:white;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,.3);}
+    .profile-name{font-family:var(--font-display);font-size:18px;font-weight:800;color:white;}
+    .profile-joined{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px;}
+    .detail-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--slate-50);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-icon{width:34px;height:34px;border-radius:8px;background:var(--teal-50);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+    .detail-label{font-size:11px;color:var(--slate-400);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+    .detail-val{font-size:13.5px;font-weight:600;color:var(--slate-900);margin-top:2px;}
+    .section-title{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--slate-900);margin:20px 0 10px;}
+    .txn-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius-xs);background:var(--slate-50);margin-bottom:6px;}
+    .txn-item:last-child{margin-bottom:0;}
+
+    /* ── EMPTY ── */
+    .empty{padding:60px 20px;text-align:center;}
+    .empty-icon{font-size:48px;margin-bottom:16px;opacity:.35;}
+    .empty-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--slate-500);margin-bottom:6px;}
+    .empty-sub{font-size:13px;color:var(--slate-400);margin-bottom:20px;}
+
+    /* ── SPINNER ── */
+    .spinner{width:22px;height:22px;border:2.5px solid var(--slate-200);border-top-color:var(--teal-500);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-box{padding:60px;display:flex;align-items:center;justify-content:center;}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-icon">🌿</div>
+          <div class="brand-name">Paluwag<span>AN</span></div>
+        </div>
+        <div class="nav-section-label">Overview</div>
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">⊞</span>Dashboard</a>
+        <div class="nav-section-label">Transactions</div>
+        <a href="contributions.html" class="nav-item"><span class="nav-icon">💳</span>Contributions<span class="nav-badge teal">0</span></a>
+        <a href="payouts.html" class="nav-item"><span class="nav-icon">📅</span>Payout Schedule</a>
+        <div class="nav-section-label">Management</div>
+        <a href="members.html" class="nav-item active"><span class="nav-icon">👥</span>Members</a>
+        <a href="groups.html" class="nav-item"><span class="nav-icon">🏘</span>Groups</a>
+        <a href="penalties.html" class="nav-item"><span class="nav-icon">⚠️</span>Penalties<span class="nav-badge">0</span></a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-av" id="userInitials">--</div>
+          <div><div class="user-name" id="userName">Loading...</div><div class="user-role" id="userRole">Member</div></div>
+          <div class="user-logout" onclick="doLogout()" title="Sign out">⎋</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Members</div>
+        <div class="topbar-sub">Manage all paluwagan members</div>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-icon">🔔<div class="tb-dot"></div></div>
+        <div class="view-toggle">
+          <button class="vt-btn active" id="btnGrid" onclick="setView('grid')" title="Grid view">⊞</button>
+          <button class="vt-btn" id="btnList" onclick="setView('list')" title="List view">☰</button>
+        </div>
+        <button class="tb-btn tb-primary" onclick="openModal()">+ Add Member</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- STAT STRIP -->
+      <div class="stat-strip">
+        <div class="ss-card"><div class="ss-ico ss-teal">👥</div><div><div class="ss-val" id="sTotal">—</div><div class="ss-lbl">Total Members</div></div></div>
+        <div class="ss-card"><div class="ss-ico ss-green">✅</div><div><div class="ss-val" id="sActive">—</div><div class="ss-lbl">Active</div></div></div>
+        <div class="ss-card"><div class="ss-ico ss-warn">💰</div><div><div class="ss-val" id="sTotalPaid">—</div><div class="ss-lbl">Total Contributed</div></div></div>
+        <div class="ss-card"><div class="ss-ico ss-danger">⚠️</div><div><div class="ss-val" id="sPenalties">—</div><div class="ss-lbl">With Penalties</div></div></div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <input class="fi fi-search" id="searchInput" placeholder="Search member name or contact..." oninput="filterMembers()"/>
+        <select class="fi fi-sel" id="statusFilter" onchange="filterMembers()">
+          <option value="">All Status</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+        <div style="margin-left:auto;font-size:12.5px;color:var(--slate-400);" id="countLabel">Loading...</div>
+      </div>
+
+      <!-- GRID VIEW -->
+      <div id="gridView">
+        <div class="member-grid" id="memberGrid">
+          <div style="grid-column:1/-1;"><div class="loading-box"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- LIST VIEW -->
+      <div id="listView" style="display:none;">
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">All Members</span>
+            <span id="listCount" style="font-size:12.5px;color:var(--slate-400);"></span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Contact</th>
+                  <th>Address</th>
+                  <th>Date Joined</th>
+                  <th>Total Paid</th>
+                  <th>Penalties</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="memberTable">
+                <tr><td colspan="8"><div class="loading-box"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MEMBER MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">👤 Add Member</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="alert alert-error"   id="modalErr"></div>
+    <div class="alert alert-success" id="modalOk"></div>
+    <div class="form-grid">
+      <div class="fg" style="grid-column:1/-1;">
+        <label class="fl">Full Name *</label>
+        <input class="form-input" id="mName" placeholder="e.g. Maria Santos"/>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="fl">Contact Number</label>
+        <input class="form-input" id="mContact" placeholder="09XXXXXXXXX"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Status</label>
+        <select class="form-input" id="mStatus" style="appearance:none;">
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Address</label>
+      <input class="form-input" id="mAddress" placeholder="e.g. Quezon City"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Date Joined</label>
+      <input class="form-input" type="date" id="mDateJoined"/>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn tb-ghost" onclick="closeModal()">Cancel</button>
+      <button class="tb-btn tb-primary" id="saveBtn" onclick="saveMember()">Save Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBER PROFILE DRAWER -->
+<div class="drawer-bg" id="drawerBg" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:var(--slate-900);">Member Profile</div>
+    <button class="modal-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody">
+    <div class="loading-box"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+  let allMembers = []
+  let editingId  = null
+  let currentView = 'grid'
+
+  const colors = ['#0d9488','#115e59','#0369a1','#7c3aed','#b45309','#15803d','#be185d','#0891b2','#c2410c','#4f46e5']
+  const ic  = n => (n||'').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)||'?'
+  const col = n => { let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))&0xff; return colors[h%colors.length] }
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) : '—'
+
+  // ── INIT ──────────────────────────────────────────
+  async function init() {
+    await requireAuth()
+    loadUser()
+    document.getElementById('mDateJoined').valueAsDate = new Date()
+    await loadMembers()
+  }
+
+  async function loadUser() {
+    const user = await getCurrentUser(); if (!user) return
+    const { data } = await db.from('system_user').select('role, member:member_id(full_name)').eq('user_id', user.id).maybeSingle()
+    const name = data?.member?.full_name || user.email?.split('@')[0] || 'User'
+    document.getElementById('userName').textContent     = name
+    document.getElementById('userRole').textContent     = data?.role || 'Member'
+    document.getElementById('userInitials').textContent = ic(name)
+  }
+
+  async function doLogout() { await db.auth.signOut(); window.location.href = '../index.html' }
+
+  // ── LOAD MEMBERS ──────────────────────────────────
+  async function loadMembers() {
+    const { data: members } = await db.from('member').select('*').order('full_name')
+    const { data: txns }    = await db.from('contribution_txn').select('member_id, amount_paid')
+    const { data: pens }    = await db.from('penalty').select('member_id').eq('penalty_status','UNPAID')
+
+    // Build lookup maps
+    const paidMap = {}; txns?.forEach(t => { paidMap[t.member_id] = (paidMap[t.member_id]||0) + Number(t.amount_paid||0) })
+    const penSet  = new Set(pens?.map(p => p.member_id))
+
+    allMembers = (members||[]).map(m => ({
+      ...m,
+      totalPaid:    paidMap[m.member_id] || 0,
+      hasPenalty:   penSet.has(m.member_id)
+    }))
+
+    updateStats()
+    filterMembers()
+  }
+
+  function updateStats() {
+    const active   = allMembers.filter(m => m.status === 'ACTIVE').length
+    const totalPaid = allMembers.reduce((s,m) => s + m.totalPaid, 0)
+    const withPen  = allMembers.filter(m => m.hasPenalty).length
+    document.getElementById('sTotal').textContent    = allMembers.length
+    document.getElementById('sActive').textContent   = active
+    document.getElementById('sTotalPaid').textContent = '₱' + totalPaid.toLocaleString()
+    document.getElementById('sPenalties').textContent = withPen
+  }
+
+  function filterMembers() {
+    const search = document.getElementById('searchInput').value.toLowerCase()
+    const status = document.getElementById('statusFilter').value
+    const filtered = allMembers.filter(m =>
+      (!search || m.full_name.toLowerCase().includes(search) || (m.contact_number||'').includes(search)) &&
+      (!status || m.status === status)
+    )
+    document.getElementById('countLabel').textContent = `${filtered.length} member${filtered.length !== 1 ? 's' : ''}`
+    document.getElementById('listCount').textContent  = `${filtered.length} records`
+    if (currentView === 'grid') renderGrid(filtered)
+    else renderTable(filtered)
+  }
+
+  // ── RENDER GRID ───────────────────────────────────
+  function renderGrid(data) {
+    const el = document.getElementById('memberGrid')
+    if (!data.length) {
+      el.innerHTML = `<div style="grid-column:1/-1;"><div class="empty">
+        <div class="empty-icon">👥</div>
+        <div class="empty-title">No members yet</div>
+        <div class="empty-sub">Add your first paluwagan member to get started.</div>
+        <button class="tb-btn tb-primary" onclick="openModal()">+ Add Member</button>
+      </div></div>`
+      return
+    }
+    el.innerHTML = data.map(m => `
+      <div class="member-card" onclick="openDrawer(${m.member_id})">
+        <div class="mc-top">
+          <div class="mc-av" style="background:${col(m.full_name)}">${ic(m.full_name)}</div>
+          <div class="mc-actions">
+            <button class="mc-action-btn" onclick="event.stopPropagation();openEdit(${m.member_id})" title="Edit">✏️</button>
+            <button class="mc-action-btn del" onclick="event.stopPropagation();deleteMember(${m.member_id})" title="Delete">🗑</button>
+          </div>
+        </div>
+        <div class="mc-name">${m.full_name}</div>
+        <div class="mc-contact">📞 ${m.contact_number||'No contact'}</div>
+        <div class="mc-address">📍 ${m.address||'No address'}</div>
+        <div class="mc-footer">
+          <div class="mc-stat">
+            <div class="mc-stat-val">₱${m.totalPaid.toLocaleString()}</div>
+            <div class="mc-stat-lbl">Contributed</div>
+          </div>
+          <div class="mc-divider"></div>
+          <div class="mc-stat">
+            <div class="mc-stat-val">${fmtDate(m.date_joined)}</div>
+            <div class="mc-stat-lbl">Joined</div>
+          </div>
+          <div class="mc-divider"></div>
+          <div class="mc-stat">
+            <span class="badge ${m.status === 'ACTIVE' ? 'b-active' : 'b-inactive'}">${m.status}</span>
+          </div>
+        </div>
+        ${m.hasPenalty ? `<div style="position:absolute;top:12px;right:12px;background:var(--danger-bg);color:var(--danger);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid var(--danger-100);">⚠️ Penalty</div>` : ''}
+      </div>`).join('')
+  }
+
+  // ── RENDER TABLE ──────────────────────────────────
+  function renderTable(data) {
+    const tbody = document.getElementById('memberTable')
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty">
+        <div class="empty-icon">👥</div>
+        <div class="empty-title">No members found</div>
+        <div class="empty-sub">Try adjusting your search or filters.</div>
+      </div></td></tr>`
+      return
+    }
+    tbody.innerHTML = data.map(m => `
+      <tr onclick="openDrawer(${m.member_id})">
+        <td>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:${col(m.full_name)};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;flex-shrink:0;">${ic(m.full_name)}</div>
+            <div>
+              <div style="font-weight:700;font-size:13.5px;">${m.full_name}</div>
+              ${m.hasPenalty ? `<span style="font-size:10px;color:var(--danger);font-weight:700;">⚠️ Has penalty</span>` : ''}
+            </div>
+          </div>
+        </td>
+        <td style="color:var(--slate-500);font-size:12.5px;">${m.contact_number||'—'}</td>
+        <td style="color:var(--slate-500);font-size:12.5px;">${m.address||'—'}</td>
+        <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(m.date_joined)}</td>
+        <td><span style="font-family:var(--font-display);font-weight:800;">₱${m.totalPaid.toLocaleString()}</span></td>
+        <td>${m.hasPenalty ? `<span style="color:var(--danger);font-weight:700;font-size:12px;">Unpaid</span>` : `<span style="color:var(--slate-400);font-size:12px;">None</span>`}</td>
+        <td><span class="badge ${m.status === 'ACTIVE' ? 'b-active' : 'b-inactive'}">${m.status}</span></td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button onclick="event.stopPropagation();openEdit(${m.member_id})"
+              style="padding:5px 10px;border:1px solid var(--slate-200);background:white;border-radius:6px;cursor:pointer;font-size:12px;color:var(--slate-500);transition:all .15s;"
+              onmouseover="this.style.borderColor='var(--teal-400)';this.style.color='var(--teal-600)'"
+              onmouseout="this.style.borderColor='var(--slate-200)';this.style.color='var(--slate-500)'">✏️</button>
+            <button onclick="event.stopPropagation();deleteMember(${m.member_id})"
+              style="padding:5px 10px;border:1px solid var(--slate-200);background:white;border-radius:6px;cursor:pointer;font-size:12px;color:var(--slate-400);transition:all .15s;"
+              onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'"
+              onmouseout="this.style.borderColor='var(--slate-200)';this.style.color='var(--slate-400)'">🗑</button>
+          </div>
+        </td>
+      </tr>`).join('')
+  }
+
+  // ── VIEW TOGGLE ───────────────────────────────────
+  function setView(v) {
+    currentView = v
+    document.getElementById('gridView').style.display = v === 'grid' ? 'block' : 'none'
+    document.getElementById('listView').style.display = v === 'list' ? 'block' : 'none'
+    document.getElementById('btnGrid').classList.toggle('active', v === 'grid')
+    document.getElementById('btnList').classList.toggle('active', v === 'list')
+    filterMembers()
+  }
+
+  // ── MODAL ─────────────────────────────────────────
+  function openModal() {
+    editingId = null
+    document.getElementById('modalTitle').textContent = '👤 Add Member'
+    document.getElementById('mName').value      = ''
+    document.getElementById('mContact').value   = ''
+    document.getElementById('mAddress').value   = ''
+    document.getElementById('mStatus').value    = 'ACTIVE'
+    document.getElementById('mDateJoined').valueAsDate = new Date()
+    document.getElementById('saveBtn').textContent = 'Save Member'
+    document.getElementById('modalErr').classList.remove('show')
+    document.getElementById('modalOk').classList.remove('show')
+    document.getElementById('modal').classList.add('open')
+  }
+
+  function openEdit(id) {
+    const m = allMembers.find(x => x.member_id === id)
+    if (!m) return
+    editingId = id
+    document.getElementById('modalTitle').textContent = '✏️ Edit Member'
+    document.getElementById('mName').value      = m.full_name || ''
+    document.getElementById('mContact').value   = m.contact_number || ''
+    document.getElementById('mAddress').value   = m.address || ''
+    document.getElementById('mStatus').value    = m.status || 'ACTIVE'
+    document.getElementById('mDateJoined').value = m.date_joined || ''
+    document.getElementById('saveBtn').textContent = 'Update Member'
+    document.getElementById('modalErr').classList.remove('show')
+    document.getElementById('modalOk').classList.remove('show')
+    document.getElementById('modal').classList.add('open')
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('open') }
+
+  async function saveMember() {
+    const name    = document.getElementById('mName').value.trim()
+    const contact = document.getElementById('mContact').value.trim()
+    const address = document.getElementById('mAddress').value.trim()
+    const status  = document.getElementById('mStatus').value
+    const joined  = document.getElementById('mDateJoined').value
+    const errEl   = document.getElementById('modalErr')
+    const okEl    = document.getElementById('modalOk')
+
+    errEl.classList.remove('show'); okEl.classList.remove('show')
+    if (!name) { errEl.textContent = 'Full name is required.'; errEl.classList.add('show'); return }
+
+    const btn = document.getElementById('saveBtn')
+    btn.disabled = true; btn.textContent = 'Saving...'
+
+    const payload = { full_name: name, contact_number: contact||null, address: address||null, status, date_joined: joined||null }
+
+    let error
+    if (editingId) {
+      ({ error } = await db.from('member').update(payload).eq('member_id', editingId))
+    } else {
+      ({ error } = await db.from('member').insert(payload))
+    }
+
+    if (error) {
+      errEl.textContent = error.message.includes('unique') ? 'Contact number already exists.' : 'Error saving. Please try again.'
+      errEl.classList.add('show')
+      btn.disabled = false; btn.textContent = editingId ? 'Update Member' : 'Save Member'
+      return
+    }
+
+    okEl.textContent = editingId ? '✅ Member updated!' : '✅ Member added successfully!'
+    okEl.classList.add('show')
+    btn.disabled = false; btn.textContent = editingId ? 'Update Member' : 'Save Member'
+    setTimeout(() => { closeModal(); loadMembers() }, 1000)
+  }
+
+  // ── DELETE ────────────────────────────────────────
+  async function deleteMember(id) {
+    const m = allMembers.find(x => x.member_id === id)
+    if (!confirm(`Delete ${m?.full_name}? This cannot be undone.`)) return
+    const { error } = await db.from('member').delete().eq('member_id', id)
+    if (error) { alert('Cannot delete — this member has related records.'); return }
+    loadMembers()
+  }
+
+  // ── PROFILE DRAWER ────────────────────────────────
+  async function openDrawer(id) {
+    document.getElementById('drawerBg').classList.add('open')
+    document.getElementById('drawer').style.display = 'block'
+    document.getElementById('drawerBody').innerHTML = '<div class="loading-box"><div class="spinner"></div></div>'
+
+    const m = allMembers.find(x => x.member_id === id)
+    if (!m) return
+
+    const [{ data: txns }, { data: pens }, { data: groups }] = await Promise.all([
+      db.from('contribution_txn').select('*, group:group_id(group_name)').eq('member_id', id).order('date_paid', { ascending: false }).limit(5),
+      db.from('penalty').select('*').eq('member_id', id).order('date_imposed', { ascending: false }).limit(3),
+      db.from('group_member').select('payout_order, group:group_id(group_name)').eq('member_id', id)
+    ])
+
+    const bdg = { PAID:'b-paid', LATE:'b-late', MISSED:'b-missed' }
+
+    document.getElementById('drawerBody').innerHTML = `
+      <div class="profile-banner">
+        <div class="profile-av" style="background:${col(m.full_name)}">${ic(m.full_name)}</div>
+        <div>
+          <div class="profile-name">${m.full_name}</div>
+          <div class="profile-joined">Joined ${fmtDate(m.date_joined)}</div>
+          <div style="margin-top:8px;"><span class="badge ${m.status==='ACTIVE'?'b-active':'b-inactive'}" style="font-size:11px;">${m.status}</span></div>
+        </div>
+      </div>
+
+      <div class="detail-row"><div class="detail-icon">📞</div><div><div class="detail-label">Contact</div><div class="detail-val">${m.contact_number||'Not provided'}</div></div></div>
+      <div class="detail-row"><div class="detail-icon">📍</div><div><div class="detail-label">Address</div><div class="detail-val">${m.address||'Not provided'}</div></div></div>
+      <div class="detail-row"><div class="detail-icon">💰</div><div><div class="detail-label">Total Contributed</div><div class="detail-val" style="color:var(--teal-600);">₱${m.totalPaid.toLocaleString()}</div></div></div>
+      <div class="detail-row"><div class="detail-icon">🏘</div><div><div class="detail-label">Groups</div><div class="detail-val">${groups?.map(g=>`<span style="display:inline-block;background:var(--teal-50);color:var(--teal-700);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;margin:2px;">${g.group?.group_name||'—'} #${g.payout_order}</span>`).join('')||'No groups'}</div></div></div>
+
+      <div class="section-title">Recent Contributions</div>
+      ${txns?.length ? txns.map(t => `
+        <div class="txn-item">
+          <span class="badge ${bdg[t.payment_status]||'b-paid'}" style="flex-shrink:0;">${t.payment_status}</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;">${t.group?.group_name||'—'} · Cycle ${t.cycle_number}</div>
+            <div style="font-size:11.5px;color:var(--slate-400);">${fmtDate(t.date_paid)} · ${t.payment_method||'—'}</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;font-size:13px;">₱${Number(t.amount_paid||0).toLocaleString()}</div>
+        </div>`).join('') : `<p style="font-size:13px;color:var(--slate-400);padding:12px 0;">No transactions recorded yet.</p>`}
+
+      ${pens?.length ? `
+        <div class="section-title" style="color:var(--danger);">⚠️ Unpaid Penalties</div>
+        ${pens.map(p => `
+          <div class="txn-item" style="background:var(--danger-bg);">
+            <span style="font-size:13px;">⚠️</span>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--danger);">${p.reason} Payment</div><div style="font-size:11.5px;color:var(--slate-400);">${fmtDate(p.date_imposed)}</div></div>
+            <div style="font-family:var(--font-display);font-weight:800;font-size:13px;color:var(--danger);">₱${Number(p.penalty_amount||0).toLocaleString()}</div>
+          </div>`).join('')}` : ''}
+
+      <div style="display:flex;gap:10px;margin-top:24px;">
+        <button class="tb-btn tb-primary" style="flex:1;" onclick="openEdit(${m.member_id});closeDrawer()">✏️ Edit Member</button>
+        <button class="tb-btn tb-ghost" onclick="deleteMember(${m.member_id});closeDrawer()">🗑 Delete</button>
+      </div>`
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawerBg').classList.remove('open')
+    document.getElementById('drawer').style.display = 'none'
+  }
+
+  init()
+</script>
+</body>
+</html>
