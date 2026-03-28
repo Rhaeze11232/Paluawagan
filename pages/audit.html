@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PaluwagAN — Audit Log</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal-900:#042f2e;--teal-800:#134e4a;--teal-700:#115e59;--teal-600:#0d9488;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;--teal-100:#ccfbf1;--teal-50:#f0fdfa;
+      --green-500:#22c55e;--green-100:#dcfce7;
+      --slate-900:#0f172a;--slate-700:#334155;--slate-500:#64748b;--slate-400:#94a3b8;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+      --white:#ffffff;--warn:#f59e0b;--warn-bg:#fffbeb;--warn-100:#fef3c7;--danger:#ef4444;--danger-bg:#fef2f2;--danger-100:#fee2e2;--blue-100:#dbeafe;--blue-600:#2563eb;
+      --purple-100:#ede9fe;--purple-600:#7c3aed;
+      --radius:18px;--radius-sm:12px;--radius-xs:8px;
+      --font-display:'Syne',sans-serif;--font-body:'Instrument Sans',sans-serif;
+      --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+      --shadow-md:0 4px 6px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.08);
+      --shadow-teal:0 8px 30px rgba(20,184,166,.2);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-body);background:#f0f4f8;color:var(--slate-900);-webkit-font-smoothing:antialiased;min-height:100vh;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--teal-300);border-radius:3px;}
+    .app{display:flex;min-height:100vh;}
+    .main{margin-left:260px;flex:1;display:flex;flex-direction:column;}
+
+    /* SIDEBAR */
+    .sidebar{width:260px;background:var(--teal-900);min-height:100vh;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:200;overflow:hidden;}
+    .sidebar::before{content:'';position:absolute;top:-100px;right:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.12),transparent 65%);pointer-events:none;}
+    .sidebar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,rgba(2,15,14,.6),transparent);pointer-events:none;}
+    .sidebar-inner{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;}
+    .sidebar-top{padding:28px 20px 16px;flex:1;overflow-y:auto;}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:32px;padding:0 4px;}
+    .brand-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal-500),var(--teal-700));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(20,184,166,.4);}
+    .brand-name{font-family:var(--font-display);font-size:20px;font-weight:800;color:white;letter-spacing:-0.3px;}
+    .brand-name span{color:var(--teal-400);}
+    .nav-section-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;margin:20px 0 6px;}
+    .nav-item{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:var(--radius-xs);font-size:13.5px;font-weight:500;color:rgba(255,255,255,.5);text-decoration:none;transition:all .18s;margin-bottom:2px;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+    .nav-item.active{background:linear-gradient(135deg,rgba(20,184,166,.22),rgba(20,184,166,.08));color:var(--teal-300);font-weight:600;box-shadow:inset 0 0 0 1px rgba(94,234,212,.15);}
+    .nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:var(--danger);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center;}
+    .nav-badge.teal{background:var(--teal-600);color:var(--teal-100);}
+    .sidebar-footer{padding:16px 20px;position:relative;z-index:2;}
+    .user-card{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .18s;}
+    .user-card:hover{background:rgba(255,255,255,.1);}
+    .user-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal-500),var(--teal-800));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
+    .user-name{font-size:13px;font-weight:600;color:white;}
+    .user-role{font-size:11px;color:var(--teal-400);margin-top:1px;}
+    .user-logout{margin-left:auto;color:rgba(255,255,255,.3);font-size:14px;cursor:pointer;}
+    .user-logout:hover{color:var(--danger);}
+
+    /* TOPBAR */
+    .topbar{background:var(--white);height:64px;border-bottom:1px solid var(--slate-200);padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar-left{display:flex;flex-direction:column;}
+    .topbar-title{font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--slate-900);}
+    .topbar-sub{font-size:11.5px;color:var(--slate-400);margin-top:1px;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .tb-btn{padding:9px 20px;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;border:none;}
+    .tb-primary{background:var(--teal-600);color:white;}
+    .tb-primary:hover{background:var(--teal-700);box-shadow:var(--shadow-teal);}
+    .tb-ghost{background:white;color:var(--slate-600);border:1px solid var(--slate-200);}
+    .tb-ghost:hover{border-color:var(--teal-400);color:var(--teal-600);}
+    .tb-icon{width:38px;height:38px;border-radius:var(--radius-xs);border:1px solid var(--slate-200);background:white;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;position:relative;}
+    .tb-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:var(--teal-500);border-radius:50%;border:2px solid white;}
+
+    /* PAGE */
+    .page{padding:28px 32px;animation:fadeUp .3s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* STAT STRIP */
+    .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .ss-card{background:white;border-radius:var(--radius);padding:20px 22px;border:1px solid var(--slate-100);display:flex;align-items:center;gap:16px;box-shadow:var(--shadow);transition:transform .2s;}
+    .ss-card:hover{transform:translateY(-2px);}
+    .ss-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .ss-teal{background:var(--teal-50);}
+    .ss-green{background:var(--green-100);}
+    .ss-blue{background:var(--blue-100);}
+    .ss-purple{background:var(--purple-100);}
+    .ss-val{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--slate-900);line-height:1;}
+    .ss-lbl{font-size:12px;color:var(--slate-400);margin-top:3px;font-weight:500;}
+
+    /* FILTER BAR */
+    .filter-bar{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:var(--shadow);}
+    .fi{padding:9px 13px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;color:var(--slate-900);background:white;outline:none;transition:all .18s;}
+    .fi:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(20,184,166,.12);}
+    .fi-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;}
+    .fi-search{min-width:220px;padding-left:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center;}
+
+    /* TIMELINE */
+    .timeline{padding:8px 0;}
+    .tl-item{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--slate-50);position:relative;animation:fadeUp .25s ease;}
+    .tl-item:last-child{border-bottom:none;}
+    .tl-left{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;}
+    .tl-ico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;position:relative;z-index:1;}
+    .tl-line{width:2px;flex:1;background:var(--slate-100);margin:4px 0;}
+    .tl-item:last-child .tl-line{display:none;}
+    .tl-body{flex:1;padding-top:4px;}
+    .tl-action{font-size:14px;font-weight:600;color:var(--slate-900);margin-bottom:3px;}
+    .tl-detail{font-size:12.5px;color:var(--slate-500);margin-bottom:4px;}
+    .tl-meta{display:flex;align-items:center;gap:10px;}
+    .tl-time{font-size:11.5px;color:var(--slate-400);}
+    .tl-tag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;}
+
+    /* ACTION TYPE COLORS */
+    .act-payment .tl-ico{background:var(--teal-50);}
+    .act-payout  .tl-ico{background:var(--blue-100);}
+    .act-penalty .tl-ico{background:var(--danger-bg);}
+    .act-member  .tl-ico{background:var(--green-100);}
+    .act-group   .tl-ico{background:var(--purple-100);}
+    .act-login   .tl-ico{background:var(--warn-bg);}
+
+    .tag-payment{background:var(--teal-100);color:var(--teal-700);}
+    .tag-payout {background:var(--blue-100);color:#1d4ed8;}
+    .tag-penalty{background:var(--danger-100);color:#b91c1c;}
+    .tag-member {background:var(--green-100);color:#15803d;}
+    .tag-group  {background:var(--purple-100);color:#6d28d9;}
+    .tag-login  {background:var(--warn-100);color:#92400e;}
+
+    /* CARD */
+    .card{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);overflow:hidden;box-shadow:var(--shadow);}
+    .card-head{padding:18px 22px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between;}
+    .card-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--slate-900);}
+    .card-body{padding:20px 22px;}
+
+    /* EMPTY */
+    .empty{padding:60px 20px;text-align:center;}
+    .empty-icon{font-size:44px;margin-bottom:14px;opacity:.35;}
+    .empty-title{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--slate-500);margin-bottom:5px;}
+    .empty-sub{font-size:13px;color:var(--slate-400);}
+
+    /* SPINNER */
+    .spinner{width:22px;height:22px;border:2.5px solid var(--slate-200);border-top-color:var(--teal-500);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-box{padding:60px;display:flex;align-items:center;justify-content:center;}
+
+    /* LOAD MORE */
+    .load-more-btn{width:100%;padding:12px;background:var(--slate-50);border:1.5px dashed var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:all .18s;margin-top:12px;}
+    .load-more-btn:hover{border-color:var(--teal-400);color:var(--teal-600);background:var(--teal-50);}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-icon">🌿</div>
+          <div class="brand-name">Paluwag<span>AN</span></div>
+        </div>
+        <div class="nav-section-label">Overview</div>
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">⊞</span>Dashboard</a>
+        <div class="nav-section-label">Transactions</div>
+        <a href="contributions.html" class="nav-item"><span class="nav-icon">💳</span>Contributions</a>
+        <a href="payouts.html" class="nav-item"><span class="nav-icon">📅</span>Payout Schedule</a>
+        <div class="nav-section-label">Management</div>
+        <a href="members.html" class="nav-item"><span class="nav-icon">👥</span>Members</a>
+        <a href="groups.html" class="nav-item"><span class="nav-icon">🏘</span>Groups</a>
+        <a href="penalties.html" class="nav-item"><span class="nav-icon">⚠️</span>Penalties</a>
+        <div class="nav-section-label">System</div>
+        <a href="audit.html" class="nav-item active"><span class="nav-icon">📋</span>Audit Log</a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-av" id="userInitials">--</div>
+          <div><div class="user-name" id="userName">Loading...</div><div class="user-role" id="userRole">Member</div></div>
+          <div class="user-logout" onclick="doLogout()" title="Sign out">⎋</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Audit Log</div>
+        <div class="topbar-sub">Complete record of all system transactions and events</div>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-icon">🔔<div class="tb-dot"></div></div>
+        <button class="tb-btn tb-ghost" onclick="exportCSV()">⬇ Export</button>
+        <button class="tb-btn tb-primary" onclick="loadLogs()">↺ Refresh</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- STAT STRIP -->
+      <div class="stat-strip">
+        <div class="ss-card"><div class="ss-ico ss-teal">💳</div><div><div class="ss-val" id="sPayments">—</div><div class="ss-lbl">Payments Recorded</div></div></div>
+        <div class="ss-card"><div class="ss-ico ss-blue">📅</div><div><div class="ss-val" id="sPayouts">—</div><div class="ss-lbl">Payouts Released</div></div></div>
+        <div class="ss-card"><div class="ss-ico ss-purple">⚠️</div><div><div class="ss-val" id="sPenalties">—</div><div class="ss-lbl">Penalties Created</div></div></div>
+        <div class="ss-card"><div class="ss-ico ss-green">👥</div><div><div class="ss-val" id="sMembers">—</div><div class="ss-lbl">Members Added</div></div></div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filter-bar">
+        <input class="fi fi-search" id="searchInput" placeholder="Search member, group, action..." oninput="filterLogs()"/>
+        <select class="fi fi-sel" id="typeFilter" onchange="filterLogs()">
+          <option value="">All Events</option>
+          <option value="payment">💳 Payments</option>
+          <option value="payout">📅 Payouts</option>
+          <option value="penalty">⚠️ Penalties</option>
+          <option value="member">👥 Members</option>
+          <option value="group">🏘 Groups</option>
+        </select>
+        <select class="fi fi-sel" id="dateFilter" onchange="filterLogs()">
+          <option value="">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
+        <div style="margin-left:auto;font-size:12.5px;color:var(--slate-400);" id="countLabel">Loading...</div>
+      </div>
+
+      <!-- TIMELINE CARD -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">📋 Transaction Timeline</span>
+          <span style="font-size:11.5px;color:var(--slate-400);">Most recent first</span>
+        </div>
+        <div class="card-body" style="padding:8px 24px;">
+          <div class="timeline" id="timeline">
+            <div class="loading-box"><div class="spinner"></div></div>
+          </div>
+          <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()" style="display:none;">
+            Load more events...
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+  let allLogs  = []
+  let displayed = 30
+  const PAGE_SIZE = 30
+
+  const ic  = n => (n||'').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)||'?'
+  const colors = ['#0d9488','#115e59','#0369a1','#7c3aed','#b45309','#15803d','#be185d','#0891b2']
+  const col = n => { let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))&0xff; return colors[h%colors.length] }
+
+  function timeAgo(d) {
+    if (!d) return '—'
+    const diff = Date.now() - new Date(d).getTime()
+    const mins = Math.floor(diff/60000)
+    if (mins < 1)  return 'Just now'
+    if (mins < 60) return mins + 'm ago'
+    const hrs = Math.floor(mins/60)
+    if (hrs < 24)  return hrs + 'h ago'
+    const days = Math.floor(hrs/24)
+    if (days < 7)  return days + 'd ago'
+    return new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})
+  }
+
+  function fullDate(d) {
+    if (!d) return '—'
+    return new Date(d).toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})
+  }
+
+  // ── INIT ──────────────────────────────────────────
+  async function init() {
+    await requireAuth()
+    loadUser()
+    await loadLogs()
+  }
+
+  async function loadUser() {
+    const user = await getCurrentUser(); if (!user) return
+    const { data } = await db.from('system_user').select('role, member:member_id(full_name)').eq('user_id', user.id).maybeSingle()
+    const name = data?.member?.full_name || user.email?.split('@')[0] || 'User'
+    document.getElementById('userName').textContent     = name
+    document.getElementById('userRole').textContent     = data?.role || 'Member'
+    document.getElementById('userInitials').textContent = ic(name)
+  }
+
+  async function doLogout() { await db.auth.signOut(); window.location.href = '../index.html' }
+
+  // ── BUILD LOGS FROM EXISTING TABLES ──────────────
+  async function loadLogs() {
+    document.getElementById('timeline').innerHTML = '<div class="loading-box"><div class="spinner"></div></div>'
+
+    // Fetch all data in parallel
+    const [txnRes, payoutRes, penaltyRes, memberRes, groupRes] = await Promise.all([
+      db.from('contribution_txn').select('*, member:member_id(full_name), group:group_id(group_name)').order('date_paid', { ascending: false }),
+      db.from('payout_schedule').select('*, member:member_id(full_name), group:group_id(group_name)').eq('payout_status','RELEASED').order('actual_date', { ascending: false }),
+      db.from('penalty').select('*, member:member_id(full_name), group:group_id(group_name)').order('date_imposed', { ascending: false }),
+      db.from('member').select('*').order('date_joined', { ascending: false }),
+      db.from('paluwagan_group').select('*').order('start_date', { ascending: false })
+    ])
+
+    const logs = []
+
+    // Contribution transactions
+    txnRes.data?.forEach(t => {
+      const statusEmoji = { PAID: '✅', LATE: '⏰', MISSED: '❌' }
+      const statusText  = { PAID: 'paid their contribution', LATE: 'made a late payment', MISSED: 'missed their payment' }
+      logs.push({
+        type:    'payment',
+        icon:    statusEmoji[t.payment_status] || '💳',
+        action:  `${t.member?.full_name || 'Unknown'} ${statusText[t.payment_status] || 'recorded a payment'}`,
+        detail:  `${t.group?.group_name || '—'} · Cycle ${t.cycle_number} · ₱${Number(t.amount_paid||0).toLocaleString()} · ${t.payment_method || '—'}`,
+        time:    t.date_paid,
+        member:  t.member?.full_name || '',
+        tag:     t.payment_status,
+        tagClass: t.payment_status === 'PAID' ? 'tag-payment' : t.payment_status === 'LATE' ? 'tag-login' : 'tag-penalty'
+      })
+    })
+
+    // Released payouts
+    payoutRes.data?.forEach(p => {
+      logs.push({
+        type:    'payout',
+        icon:    '🏦',
+        action:  `Payout released to ${p.member?.full_name || 'Unknown'}`,
+        detail:  `${p.group?.group_name || '—'} · Cycle ${p.cycle_number} · ₱${Number(p.amount_released||0).toLocaleString()}`,
+        time:    p.actual_date,
+        member:  p.member?.full_name || '',
+        tag:     'RELEASED',
+        tagClass: 'tag-payout'
+      })
+    })
+
+    // Penalties
+    penaltyRes.data?.forEach(p => {
+      logs.push({
+        type:    'penalty',
+        icon:    '⚠️',
+        action:  `Penalty ${p.penalty_status === 'PAID' ? 'collected from' : 'imposed on'} ${p.member?.full_name || 'Unknown'}`,
+        detail:  `${p.group?.group_name || '—'} · ${p.reason} · ₱${Number(p.penalty_amount||0).toLocaleString()} · ${p.penalty_status}`,
+        time:    p.date_imposed,
+        member:  p.member?.full_name || '',
+        tag:     p.reason,
+        tagClass: 'tag-penalty'
+      })
+    })
+
+    // New members
+    memberRes.data?.forEach(m => {
+      logs.push({
+        type:    'member',
+        icon:    '👤',
+        action:  `New member registered: ${m.full_name}`,
+        detail:  `${m.contact_number || 'No contact'} · ${m.address || 'No address'} · Status: ${m.status}`,
+        time:    m.date_joined,
+        member:  m.full_name,
+        tag:     'NEW MEMBER',
+        tagClass: 'tag-member'
+      })
+    })
+
+    // Groups created
+    groupRes.data?.forEach(g => {
+      logs.push({
+        type:    'group',
+        icon:    '🏘',
+        action:  `Paluwagan group created: ${g.group_name}`,
+        detail:  `Pot: ₱${Number(g.pot_amount||0).toLocaleString()} · ${g.cycle_frequency} · ${g.total_members} members · ${g.status}`,
+        time:    g.start_date,
+        member:  '',
+        tag:     g.status,
+        tagClass: 'tag-group'
+      })
+    })
+
+    // Sort all logs by time descending
+    logs.sort((a, b) => {
+      if (!a.time) return 1
+      if (!b.time) return -1
+      return new Date(b.time) - new Date(a.time)
+    })
+
+    allLogs = logs
+    updateStats()
+    filterLogs()
+  }
+
+  // ── STATS ─────────────────────────────────────────
+  function updateStats() {
+    document.getElementById('sPayments').textContent = allLogs.filter(l => l.type === 'payment').length
+    document.getElementById('sPayouts').textContent  = allLogs.filter(l => l.type === 'payout').length
+    document.getElementById('sPenalties').textContent = allLogs.filter(l => l.type === 'penalty').length
+    document.getElementById('sMembers').textContent  = allLogs.filter(l => l.type === 'member').length
+  }
+
+  // ── FILTER ────────────────────────────────────────
+  function filterLogs() {
+    const search = document.getElementById('searchInput').value.toLowerCase()
+    const type   = document.getElementById('typeFilter').value
+    const date   = document.getElementById('dateFilter').value
+
+    const now   = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const week  = new Date(today.getTime() - 7 * 86400000)
+    const month = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    const filtered = allLogs.filter(l => {
+      const matchSearch = !search || l.action.toLowerCase().includes(search) || l.detail.toLowerCase().includes(search) || l.member.toLowerCase().includes(search)
+      const matchType   = !type || l.type === type
+      let matchDate = true
+      if (date && l.time) {
+        const t = new Date(l.time)
+        if (date === 'today') matchDate = t >= today
+        else if (date === 'week')  matchDate = t >= week
+        else if (date === 'month') matchDate = t >= month
+      }
+      return matchSearch && matchType && matchDate
+    })
+
+    displayed = PAGE_SIZE
+    document.getElementById('countLabel').textContent = `${filtered.length} event${filtered.length !== 1 ? 's' : ''}`
+    renderTimeline(filtered)
+
+    const btn = document.getElementById('loadMoreBtn')
+    btn.style.display = filtered.length > PAGE_SIZE ? 'block' : 'none'
+    btn._data = filtered
+  }
+
+  // ── RENDER ────────────────────────────────────────
+  function renderTimeline(data) {
+    const el = document.getElementById('timeline')
+
+    if (!data.length) {
+      el.innerHTML = `<div class="empty">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">No events found</div>
+        <div class="empty-sub">Try adjusting your filters or add some data to the system.</div>
+      </div>`
+      return
+    }
+
+    const slice = data.slice(0, displayed)
+
+    el.innerHTML = slice.map(log => `
+      <div class="tl-item act-${log.type}">
+        <div class="tl-left">
+          <div class="tl-ico">${log.icon}</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-action">${log.action}</div>
+          <div class="tl-detail">${log.detail}</div>
+          <div class="tl-meta">
+            <span class="tl-time" title="${fullDate(log.time)}">🕐 ${timeAgo(log.time)}</span>
+            <span class="tl-tag ${log.tagClass}">${log.tag}</span>
+          </div>
+        </div>
+      </div>`).join('')
+
+    const btn = document.getElementById('loadMoreBtn')
+    btn.style.display = data.length > displayed ? 'block' : 'none'
+    btn._data = data
+  }
+
+  function loadMore() {
+    displayed += PAGE_SIZE
+    const btn = document.getElementById('loadMoreBtn')
+    renderTimeline(btn._data)
+  }
+
+  // ── EXPORT ────────────────────────────────────────
+  function exportCSV() {
+    const rows = [['Type','Action','Detail','Time','Tag']]
+    allLogs.forEach(l => rows.push([l.type, l.action, l.detail, l.time || '', l.tag]))
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n')
+    const a = document.createElement('a')
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+    a.download = 'paluwagan_audit_log.csv'; a.click()
+  }
+
+  init()
+</script>
+</body>
+</html>
