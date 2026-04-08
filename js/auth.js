@@ -2,7 +2,7 @@
 // Handles login, logout, and session checking across all pages
 
 // Call this at the top of every PROTECTED page (dashboard, contributions, etc.)
-// It redirects to login if the user is not signed in
+//Balik sa login if naka login un nainput na account 
 async function requireAuth() {
   const { data: { session } } = await db.auth.getSession()
   if (!session) {
@@ -19,7 +19,7 @@ async function redirectIfLoggedIn() {
   }
 }
 
-// Sign in with email + password
+// Sign in with email tas password
 async function signIn(email, password) {
   const { data, error } = await db.auth.signInWithPassword({ email, password })
   if (error) throw error
