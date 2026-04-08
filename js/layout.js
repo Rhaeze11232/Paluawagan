@@ -1,4 +1,3 @@
-// js/layout.js
 // Injects the sidebar and topbar into every page
 // Call renderLayout('dashboard') at the bottom of each page
 
@@ -59,7 +58,7 @@ function renderLayout(activePage, pageTitle) {
       </div>
     </div>`
 
-  // Inject before the .page div
+  // Inserts before the .page div
   const app = document.getElementById('app')
   app.innerHTML = sidebar + `<div class="main">${topbar}<div class="page">` + app.innerHTML + `</div></div>`
 
