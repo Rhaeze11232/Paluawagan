@@ -671,7 +671,7 @@
     })
 
     if (error) {
-      errEl.textContent = 'Error saving penalty. Please try again.'
+      errEl.textContent = 'Error: ' + (error.message || 'Please try again.')
       errEl.classList.add('show')
       btn.disabled = false; btn.textContent = 'Save Penalty'; return
     }

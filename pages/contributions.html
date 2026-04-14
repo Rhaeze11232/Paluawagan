@@ -698,7 +698,7 @@
       })
       if (penErr) {
         console.error('Penalty auto-insert failed:', penErr)
-        showToast('Payment saved, but penalty record failed. Please add it manually.', 'error')
+        showToast('Payment saved, but penalty failed: ' + penErr.message, 'error')
       }
     }
 
