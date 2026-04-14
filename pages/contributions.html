@@ -407,10 +407,10 @@
       .select('*, member:member_id(full_name), group:group_id(group_name)')
       .order('date_paid', { ascending: false })
     allTxns = data || []
-    updateChipCounts()
     populateCycleFilter()
     renderTable(allTxns)
     updateStats(allTxns)
+    updateChipCounts(allTxns)
     document.getElementById('badge-contrib').textContent = allTxns.length
   }
 
@@ -425,11 +425,11 @@
     document.getElementById('sMissed').textContent   = missed
   }
 
-  function updateChipCounts() {
-    document.getElementById('cAll').textContent    = allTxns.length
-    document.getElementById('cPaid').textContent   = allTxns.filter(t=>t.payment_status==='PAID').length
-    document.getElementById('cLate').textContent   = allTxns.filter(t=>t.payment_status==='LATE').length
-    document.getElementById('cMissed').textContent = allTxns.filter(t=>t.payment_status==='MISSED').length
+  function updateChipCounts(data) {
+    document.getElementById('cAll').textContent    = data.length
+    document.getElementById('cPaid').textContent   = data.filter(t=>t.payment_status==='PAID').length
+    document.getElementById('cLate').textContent   = data.filter(t=>t.payment_status==='LATE').length
+    document.getElementById('cMissed').textContent = data.filter(t=>t.payment_status==='MISSED').length
   }
 
   function populateCycleFilter() {
@@ -495,6 +495,8 @@
       (!status || t.payment_status === status)
     )
     renderTable(filtered)
+    updateStats(filtered)
+    updateChipCounts(filtered)
   }
 
   function setChip(el) {

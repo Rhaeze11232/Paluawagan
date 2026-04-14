@@ -116,6 +116,14 @@
     .av-stack{display:flex;}
     .av{width:26px;height:26px;border-radius:50%;font-size:10px;font-weight:800;color:white;display:flex;align-items:center;justify-content:center;border:2px solid white;margin-left:-7px;}
     .av:first-child{margin-left:0;}
+    /* Member Management Styling */
+    .member-list{margin-top:16px;border-top:1px solid var(--slate-100);padding-top:16px;}
+    .member-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:8px;border-radius:var(--radius-xs);background:var(--slate-50);transition:background .2s;}
+    .member-row:hover{background:var(--slate-100);}
+    .mr-info{flex:1;font-size:13px;font-weight:600;}
+    .mr-order{width:60px;padding:5px;border:1px solid var(--slate-200);border-radius:4px;text-align:center;font-family:var(--font-display);font-weight:700;}
+    .mr-del{color:var(--danger);cursor:pointer;font-size:14px;padding:5px;}
+    .add-member-zone{display:flex;gap:8px;margin-bottom:16px;}
   </style>
 </head>
 <body>
@@ -197,6 +205,38 @@
   </div>
 </div>
 
+<!-- MANAGE MEMBERS MODAL -->
+<div class="modal-bg" id="memberModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title">👥 Manage Members</div>
+      <button class="modal-close" onclick="closeMemberModal()">✕</button>
+    </div>
+    <div id="mModErr" class="alert alert-error"></div>
+    <div id="mModOk" class="alert alert-success"></div>
+    
+    <div class="add-member-zone">
+      <select class="form-input" id="newMemberSel" style="appearance:none;">
+        <option value="">— Add a member —</option>
+      </select>
+      <button class="tb-btn tb-primary" onclick="addMemberToLocalList()">Add</button>
+    </div>
+
+    <div class="member-list" id="groupMembersList">
+      <!-- Members will be listed here -->
+      <div class="empty" style="padding:20px 0;">
+        <div class="empty-title" style="font-size:14px;">No members assigned</div>
+        <div class="empty-sub">Add members to set the payout rotation.</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="tb-btn tb-ghost" onclick="closeMemberModal()">Cancel</button>
+      <button class="tb-btn tb-primary" id="memberSaveBtn" onclick="saveMembership()">Save Membership</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/auth.js"></script>
@@ -207,6 +247,7 @@
   const fmtDate=d=>d?new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}):'—'
   const stripes=['background:linear-gradient(90deg,var(--teal-500),var(--teal-400))','background:linear-gradient(90deg,var(--warn),#fbbf24)','background:linear-gradient(90deg,var(--green-500),#4ade80)','background:linear-gradient(90deg,#6366f1,#818cf8)','background:linear-gradient(90deg,#ec4899,#f9a8d4)']
   const fills=['pf-teal','pf-warn','pf-green','pf-teal']
+  let allMembers = [], currentGroupId = null, localMembers = []
 
   async function init(){
     await requireAuth()
@@ -225,8 +266,15 @@
 
   async function loadMembers(){
     const{data}=await db.from('member').select('member_id, full_name').eq('status','ACTIVE').order('full_name')
+    allMembers = data || []
     const sel=document.getElementById('gOrganizer')
-    data?.forEach(m=>sel.innerHTML+=`<option value="${m.member_id}">${m.full_name}</option>`)
+    const mSel=document.getElementById('newMemberSel')
+    sel.innerHTML = '<option value="">— Select organizer —</option>'
+    mSel.innerHTML = '<option value="">— Add a member —</option>'
+    allMembers.forEach(m=>{
+      sel.innerHTML+=`<option value="${m.member_id}">${m.full_name}</option>`
+      mSel.innerHTML+=`<option value="${m.member_id}">${m.full_name}</option>`
+    })
   }
 
   async function loadGroups(){
@@ -261,8 +309,8 @@
           <span class="badge ${bdgMap[g.status]||'b-active'}">${g.status}</span>
         </div>
         <div class="gc-actions">
-          <div class="gc-btn" onclick="window.location.href='contributions.html'">💳 Contributions</div>
-          <div class="gc-btn" onclick="window.location.href='payouts.html'">📅 Payouts</div>
+          <div class="gc-btn" onclick="openMemberModal(${g.group_id})">👥 Members</div>
+          <div class="gc-btn" onclick="window.location.href='contributions.html'">💳 Contribs</div>
           <div class="gc-btn primary" onclick="deleteGroup(${g.group_id})">🗑</div>
         </div>
       </div>`).join('')
@@ -308,6 +356,116 @@
     await db.from('paluwagan_group').delete().eq('group_id',id)
     loadGroups()
   }
+
+  // ── MEMBERSHIP MANAGEMENT ──────────────────────────
+  async function openMemberModal(groupId) {
+    currentGroupId = groupId
+    localMembers = []
+    document.getElementById('memberModal').classList.add('open')
+    document.getElementById('groupMembersList').innerHTML = '<div class="loading-box"><div class="spinner"></div></div>'
+    
+    const { data, error } = await db.from('group_member')
+      .select('member_id, payout_order, member:member_id(full_name)')
+      .eq('group_id', groupId)
+      .order('payout_order')
+    
+    if (data) {
+      localMembers = data.map(m => ({
+        member_id: m.member_id,
+        full_name: m.member?.full_name,
+        payout_order: m.payout_order
+      }))
+    }
+    renderLocalMembers()
+  }
+
+  function closeMemberModal() {
+    document.getElementById('memberModal').classList.remove('open')
+    document.getElementById('mModErr').classList.remove('show')
+    document.getElementById('mModOk').classList.remove('show')
+  }
+
+  function renderLocalMembers() {
+    const list = document.getElementById('groupMembersList')
+    if (!localMembers.length) {
+      list.innerHTML = '<div class="empty" style="padding:20px 0;"><div class="empty-title" style="font-size:14px;">No members assigned</div><div class="empty-sub">Add members to set the payout rotation.</div></div>'
+      return
+    }
+    list.innerHTML = localMembers.map((m, i) => `
+      <div class="member-row">
+        <div class="mr-info">${m.full_name}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:10px;color:var(--slate-400);font-weight:700;">ORDER</span>
+          <input type="number" class="mr-order" value="${m.payout_order || (i+1)}" onchange="updateOrder(${m.member_id}, this.value)">
+        </div>
+        <div class="mr-del" onclick="removeMemberFromLocalList(${m.member_id})">✕</div>
+      </div>
+    `).join('')
+  }
+
+  function addMemberToLocalList() {
+    const sel = document.getElementById('newMemberSel')
+    const mid = parseInt(sel.value)
+    if (!mid) return
+    if (localMembers.some(m => m.member_id === mid)) return
+    
+    const member = allMembers.find(m => m.member_id === mid)
+    localMembers.push({
+      member_id: mid,
+      full_name: member.full_name,
+      payout_order: localMembers.length + 1
+    })
+    renderLocalMembers()
+    sel.value = ""
+  }
+
+  function removeMemberFromLocalList(mid) {
+    localMembers = localMembers.filter(m => m.member_id !== mid)
+    renderLocalMembers()
+  }
+
+  function updateOrder(mid, val) {
+    const m = localMembers.find(x => x.member_id === mid)
+    if (m) m.payout_order = parseInt(val)
+  }
+
+  async function saveMembership() {
+    const err = document.getElementById('mModErr')
+    const ok = document.getElementById('mModOk')
+    const btn = document.getElementById('memberSaveBtn')
+    
+    err.classList.remove('show'); ok.classList.remove('show')
+    btn.disabled = true; btn.textContent = 'Saving...'
+
+    // 1. Delete existing membership for this group
+    const { error: delErr } = await db.from('group_member').delete().eq('group_id', currentGroupId)
+    
+    if (delErr) {
+      err.textContent = 'Error clearing existing members: ' + delErr.message
+      err.classList.add('show'); btn.disabled = false; btn.textContent = 'Save Membership'; return
+    }
+
+    if (localMembers.length > 0) {
+      // 2. Insert new list
+      const payload = localMembers.map(m => ({
+        group_id: currentGroupId,
+        member_id: m.member_id,
+        payout_order: m.payout_order
+      }))
+      
+      const { error: insErr } = await db.from('group_member').insert(payload)
+      if (insErr) {
+        err.textContent = 'Error saving new list: ' + insErr.message
+        err.classList.add('show'); btn.disabled = false; btn.textContent = 'Save Membership'; return
+      }
+    }
+
+    ok.textContent = '✅ Membership updated successfully!'
+    ok.classList.add('show')
+    btn.disabled = false; btn.textContent = 'Save Membership'
+    setTimeout(() => { closeMemberModal(); loadGroups(); }, 1000)
+  }
+
   init()
 </script>
 </body>
