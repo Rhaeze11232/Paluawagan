@@ -663,7 +663,6 @@
     const { error } = await db.from('penalty').insert({
       member_id:      parseInt(memberId),
       group_id:       parseInt(groupId),
-      cycle_number:   parseInt(document.getElementById('mCycle').value) || null,
       penalty_amount: parseFloat(amount),
       reason,
       date_imposed:   date || new Date().toISOString().split('T')[0],
