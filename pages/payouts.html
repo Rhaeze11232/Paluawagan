@@ -100,12 +100,19 @@
     .step.done    .step-dot{background:var(--teal-500);color:white;box-shadow:0 4px 12px rgba(20,184,166,.4);}
     .step.current .step-dot{background:var(--teal-900);color:white;box-shadow:0 0 0 5px var(--teal-100);}
     .step.next    .step-dot{background:var(--slate-100);color:var(--slate-400);border:2px dashed var(--slate-200);}
+    .step.locked  .step-dot{background:var(--slate-200);color:var(--slate-400);opacity:.6;}
     .step-name{font-size:11px;color:var(--slate-500);margin-top:8px;text-align:center;max-width:80px;line-height:1.4;}
     .step.current .step-name{color:var(--teal-700);font-weight:700;}
     .step.done    .step-name{color:var(--slate-400);}
+    .step.locked  .step-name{color:var(--slate-300);}
     .step-line{flex:1;height:2px;min-width:20px;margin-bottom:28px;}
     .step-line.done{background:var(--teal-400);}
     .step-line.next{background:var(--slate-200);}
+
+    /* DISABLED BUTTON */
+    .tb-btn:disabled,.tb-btn.disabled{opacity:.5;cursor:not-allowed;pointer-events:none;}
+    .released-label{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:var(--radius-xs);background:var(--green-100);color:#15803d;font-size:12.5px;font-weight:700;}
+    .released-label::before{content:'●';font-size:6px;}
 
     /* CURRENT RECIPIENT BOX */
     .recipient-box{background:linear-gradient(135deg,var(--teal-50),#ecfdf5);border:1px solid var(--teal-200);border-radius:var(--radius-sm);padding:20px;margin-top:4px;}
@@ -341,8 +348,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/auth.js"></script>
+<script src="../js/notifications.js"></script>
 <script>
   let currentPayoutId = null
+  let currentPayoutMemberId = null
+  let currentUserMemberId = null
   const ic  = n => (n||'').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)||'?'
   const colors = ['#0d9488','#115e59','#0369a1','#7c3aed','#b45309','#15803d','#be185d','#0891b2']
   const col = n => { let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))&0xff; return colors[h%colors.length] }
@@ -356,8 +366,9 @@
 
   async function loadUser() {
     const user = await getCurrentUser(); if (!user) return
-    const { data } = await db.from('system_user').select('role, member:member_id(full_name)').eq('user_id', user.id).maybeSingle()
+    const { data } = await db.from('system_user').select('role, member_id, member:member_id(full_name)').eq('user_id', user.id).maybeSingle()
     const name = data?.member?.full_name || user.email?.split('@')[0] || 'User'
+    currentUserMemberId = data?.member_id || null
     document.getElementById('userName').textContent = name
     document.getElementById('userRole').textContent = data?.role || 'Member'
     document.getElementById('userInitials').textContent = ic(name)
@@ -426,10 +437,33 @@
 
     if (pending) {
       currentPayoutId = pending.payout_id
+      currentPayoutMemberId = pending.member_id || null
       document.getElementById('rbName').textContent = pending.member?.full_name || '—'
       document.getElementById('rbMeta').textContent =
         `Cycle ${currentCycle} · Scheduled ${fmtDate(pending.scheduled_date)} · ₱${Number(pending.amount_released||0).toLocaleString()}`
       rbox.style.display = 'block'
+
+      // Build release button with restrictions
+      const actionsEl = rbox.querySelector('.rb-actions')
+      const isSelf = currentUserMemberId && currentPayoutMemberId && currentUserMemberId === currentPayoutMemberId
+      const isReleased = pending.payout_status === 'RELEASED'
+
+      if (isReleased) {
+        actionsEl.innerHTML = `
+          <span class="released-label">Already Released</span>
+          <button class="tb-btn tb-ghost" style="font-size:12.5px;padding:9px 18px;" onclick="loadRotation()">↺ Refresh</button>
+        `
+      } else if (isSelf) {
+        actionsEl.innerHTML = `
+          <button class="tb-btn tb-primary disabled" style="font-size:12.5px;padding:9px 18px;" disabled title="You cannot release your own payout">🚫 Self-release disabled</button>
+          <button class="tb-btn tb-ghost" style="font-size:12.5px;padding:9px 18px;" onclick="loadRotation()">↺ Refresh</button>
+        `
+      } else {
+        actionsEl.innerHTML = `
+          <button class="tb-btn tb-primary" style="font-size:12.5px;padding:9px 18px;" onclick="releasePayout()">✓ Mark as Released</button>
+          <button class="tb-btn tb-ghost" style="font-size:12.5px;padding:9px 18px;" onclick="loadRotation()">↺ Refresh</button>
+        `
+      }
     }
 
     await loadCycleStatus(groupId, currentCycle, members)
@@ -494,8 +528,10 @@
       tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No payout records yet</div><div class="empty-sub">Payout schedules will appear once groups are created.</div></div></td></tr>`
       return
     }
-    tbody.innerHTML = data.map(p => `
-      <tr>
+    tbody.innerHTML = data.map(p => {
+      const rowStyle = p.payout_status === 'RELEASED' ? 'opacity:.65;' : ''
+      return `
+      <tr style="${rowStyle}">
         <td><div style="display:flex;align-items:center;gap:10px;">
           <div class="av" style="background:${col(p.member?.full_name)};width:32px;height:32px;font-size:11px;">${ic(p.member?.full_name)}</div>
           <strong>${p.member?.full_name||'—'}</strong>
@@ -505,7 +541,8 @@
         <td><span style="font-family:var(--font-display);font-weight:800;">₱${Number(p.amount_released||0).toLocaleString()}</span></td>
         <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(p.scheduled_date)}</td>
         <td><span class="badge ${bMap[p.payout_status]||'b-pending'}">${p.payout_status}</span></td>
-      </tr>`).join('')
+      </tr>`
+    }).join('')
   }
 
   async function loadUpcoming() {
@@ -532,8 +569,24 @@
 
   async function releasePayout() {
     if (!currentPayoutId) return
+
+    // Prevent self-release
+    if (currentUserMemberId && currentPayoutMemberId && currentUserMemberId === currentPayoutMemberId) {
+      showToast('You cannot release your own payout.', 'error')
+      return
+    }
+
     if (!confirm('Mark this payout as released?')) return
     await db.from('payout_schedule').update({ payout_status:'RELEASED', actual_date: new Date().toISOString().split('T')[0] }).eq('payout_id', currentPayoutId)
+
+    // Send notification
+    const recipientName = document.getElementById('rbName').textContent
+    sendNotification('PAYOUT_RELEASED', {
+      member_name: recipientName,
+      payout_id: currentPayoutId
+    })
+    showToast(`Payout released to ${recipientName}!`, 'success')
+
     await Promise.all([loadRotation(), loadPayoutTable(), loadUpcoming(), loadStats()])
   }
 

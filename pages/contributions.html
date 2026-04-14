@@ -124,6 +124,22 @@
     .pill-gcash{background:#faf5ff;color:#7c3aed;}
     .pill-bank{background:var(--blue-100);color:#1d4ed8;}
 
+    /* RECEIPT */
+    .receipt-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--teal-200);background:var(--teal-50);color:var(--teal-700);font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .15s;display:inline-flex;align-items:center;gap:4px;}
+    .receipt-btn:hover{background:var(--teal-600);color:white;border-color:var(--teal-600);}
+
+    /* CYCLE COMPLETE BANNER */
+    .cycle-complete-banner{background:linear-gradient(135deg,#065f46,#059669);border-radius:var(--radius);padding:16px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px;color:white;box-shadow:0 8px 24px rgba(5,150,105,.25);animation:fadeUp .3s ease;}
+    .ccb-icon{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .ccb-title{font-family:var(--font-display);font-size:15px;font-weight:800;}
+    .ccb-sub{font-size:12.5px;color:rgba(255,255,255,.7);margin-top:2px;}
+
+    /* FILE INPUT STYLED */
+    .file-input-wrap{position:relative;}
+    .file-input-wrap input[type=file]{width:100%;padding:10px 13px;border:1.5px dashed var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;color:var(--slate-700);background:var(--slate-50);outline:none;transition:all .18s;cursor:pointer;}
+    .file-input-wrap input[type=file]:hover{border-color:var(--teal-400);background:var(--teal-50);}
+    .file-hint{font-size:11px;color:var(--slate-400);margin-top:4px;}
+
     /* AVATAR */
     .av-row{display:flex;align-items:center;gap:10px;}
     .av{width:34px;height:34px;border-radius:50%;font-size:12px;font-weight:800;color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -272,12 +288,13 @@
                 <th>Amount</th>
                 <th>Date Paid</th>
                 <th>Method</th>
+                <th>Receipt</th>
                 <th>Status</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="txnTable">
-              <tr><td colspan="8"><div class="loading-box"><div class="spinner"></div></div></td></tr>
+              <tr><td colspan="9"><div class="loading-box"><div class="spinner"></div></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -302,7 +319,7 @@
     </div>
     <div class="fg">
       <label class="fl">Group</label>
-      <select class="form-input" id="mGroup" style="appearance:none;"></select>
+      <select class="form-input" id="mGroup" style="appearance:none;" onchange="autoFillContribAmount()"></select>
     </div>
     <div class="form-grid">
       <div class="fg">
@@ -321,12 +338,19 @@
       </div>
       <div class="fg">
         <label class="fl">Payment Method</label>
-        <select class="form-input" id="mMethod" style="appearance:none;">
+        <select class="form-input" id="mMethod" style="appearance:none;" onchange="toggleReceiptField()">
           <option value="CASH">💵 Cash</option>
           <option value="GCASH">📱 GCash</option>
           <option value="BANK">🏦 Bank Transfer</option>
         </select>
       </div>
+    </div>
+    <div class="fg" id="receiptFieldWrap" style="display:none;">
+      <label class="fl">Upload Payment Receipt *</label>
+      <div class="file-input-wrap">
+        <input type="file" id="mReceipt" accept="image/*,.pdf"/>
+      </div>
+      <div class="file-hint">Required for Bank Transfer. Accepted: images, PDF.</div>
     </div>
     <div class="fg">
       <label class="fl">Payment Status</label>
@@ -346,8 +370,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/auth.js"></script>
+<script src="../js/notifications.js"></script>
 <script>
-  let allTxns = [], activeChip = ''
+  let allTxns = [], activeChip = '', groupsData = [], cycleCompleteFor = null
   const colors = ['#0d9488','#115e59','#0369a1','#7c3aed','#b45309','#15803d','#be185d','#0891b2']
   const ic = n => (n||'').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)||'?'
   const col = n => { let h=0; for(let c of (n||'')) h=(h*31+c.charCodeAt(0))&0xff; return colors[h%colors.length] }
@@ -416,8 +441,11 @@
     document.getElementById('countLabel').innerHTML =
       `<strong>${data.length}</strong> records &nbsp;·&nbsp; <strong style="color:var(--teal-600);">₱${total.toLocaleString()}</strong> total`
 
+    // Check cycle completion status for the currently visible data
+    checkCycleCompletion()
+
     if (!data.length) {
-      tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon">💳</div><div class="empty-title">No transactions found</div><div class="empty-sub">Try adjusting your filters or record a new payment.</div></div></td></tr>`
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="empty-icon">💳</div><div class="empty-title">No transactions found</div><div class="empty-sub">Try adjusting your filters or record a new payment.</div></div></td></tr>`
       return
     }
 
@@ -439,6 +467,7 @@
         <td><span style="font-family:var(--font-display);font-weight:800;font-size:14px;">₱${Number(t.amount_paid||0).toLocaleString()}</span></td>
         <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(t.date_paid)}</td>
         <td>${t.payment_method ? `<span class="pill ${pillCl[t.payment_method]||'pill-cash'}">${t.payment_method}</span>` : '<span style="color:var(--slate-300)">—</span>'}</td>
+        <td>${t.receipt_url ? `<a href="${t.receipt_url}" target="_blank" class="receipt-btn">📎 View</a>` : '<span style="color:var(--slate-300);font-size:12px;">—</span>'}</td>
         <td><span class="badge ${bdg[t.payment_status]||'b-paid'}">${t.payment_status||'—'}</span></td>
         <td>
           <button onclick="deleteRow(${t.transaction_id})"
@@ -472,7 +501,8 @@
   }
 
   async function loadGroups() {
-    const { data } = await db.from('paluwagan_group').select('group_id, group_name').eq('status','ONGOING')
+    const { data } = await db.from('paluwagan_group').select('group_id, group_name, contribution_amount, total_members').eq('status','ONGOING')
+    groupsData = data || []
     const sel = document.getElementById('groupFilter')
     const mSel = document.getElementById('mGroup')
     sel.innerHTML  = '<option value="">All Groups</option>'
@@ -483,6 +513,20 @@
     })
   }
 
+  function autoFillContribAmount() {
+    const groupId = parseInt(document.getElementById('mGroup').value)
+    const group = groupsData.find(g => g.group_id === groupId)
+    if (group && group.contribution_amount) {
+      document.getElementById('mAmount').value = group.contribution_amount
+    }
+  }
+
+  function toggleReceiptField() {
+    const method = document.getElementById('mMethod').value
+    const wrap = document.getElementById('receiptFieldWrap')
+    wrap.style.display = (method === 'BANK' || method === 'GCASH') ? 'block' : 'none'
+  }
+
   async function loadMembers() {
     const { data } = await db.from('member').select('member_id, full_name').eq('status','ACTIVE').order('full_name')
     const sel = document.getElementById('mMember')
@@ -490,11 +534,16 @@
     data?.forEach(m => sel.innerHTML += `<option value="${m.member_id}">${m.full_name}</option>`)
   }
 
-  function openModal()  { document.getElementById('modal').classList.add('open') }
+  function openModal() {
+    document.getElementById('modal').classList.add('open')
+    toggleReceiptField()
+  }
   function closeModal() {
     document.getElementById('modal').classList.remove('open')
     document.getElementById('modalErr').classList.remove('show')
     document.getElementById('modalOk').classList.remove('show')
+    document.getElementById('mReceipt').value = ''
+    document.getElementById('receiptFieldWrap').style.display = 'none'
   }
 
   async function savePayment() {
@@ -505,44 +554,156 @@
     const date     = document.getElementById('mDate').value
     const method   = document.getElementById('mMethod').value
     const status   = document.getElementById('mStatus').value
+    const fileInput= document.getElementById('mReceipt')
     const errEl    = document.getElementById('modalErr')
     const okEl     = document.getElementById('modalOk')
 
     errEl.classList.remove('show'); okEl.classList.remove('show')
 
+    // ─── Basic required fields ───
     if (!memberId || !groupId || !cycle || amount === '') {
       errEl.textContent = 'Please fill in all required fields.'
+      errEl.classList.add('show'); return
+    }
+
+    // ─── Amount > 0 if PAID ───
+    if (status === 'PAID' && (parseFloat(amount) <= 0 || !amount)) {
+      errEl.textContent = 'Amount must be greater than ₱0 for PAID status.'
+      errEl.classList.add('show'); return
+    }
+
+    // ─── Amount must match group contribution_amount ───
+    const selectedGroup = groupsData.find(g => g.group_id === parseInt(groupId))
+    if (selectedGroup && selectedGroup.contribution_amount && status === 'PAID') {
+      if (parseFloat(amount) !== parseFloat(selectedGroup.contribution_amount)) {
+        errEl.textContent = `Amount must be ₱${Number(selectedGroup.contribution_amount).toLocaleString()} (group contribution amount).`
+        errEl.classList.add('show'); return
+      }
+    }
+
+    // ─── Date cannot be in the future ───
+    if (date && new Date(date) > new Date()) {
+      errEl.textContent = 'Date paid cannot be in the future.'
+      errEl.classList.add('show'); return
+    }
+
+    // ─── Duplicate check: member+group+cycle ───
+    const { data: existing } = await db.from('contribution_txn')
+      .select('transaction_id')
+      .eq('member_id', parseInt(memberId))
+      .eq('group_id', parseInt(groupId))
+      .eq('cycle_number', parseInt(cycle))
+      .eq('payment_status', 'PAID')
+      .limit(1)
+    if (existing && existing.length > 0) {
+      errEl.textContent = 'This member has already paid for this cycle in this group.'
+      errEl.classList.add('show'); return
+    }
+
+    // ─── Receipt required for BANK transfer ───
+    if (method === 'BANK' && (!fileInput.files || !fileInput.files[0])) {
+      errEl.textContent = 'Proof of payment (receipt) is required for Bank Transfer.'
       errEl.classList.add('show'); return
     }
 
     const btn = document.getElementById('saveBtn')
     btn.disabled = true; btn.textContent = 'Saving...'
 
-    const { data: txn, error } = await db.from('contribution_txn').insert({
+    // ─── Upload receipt if provided ───
+    let receiptUrl = null
+    if (fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0]
+      const ext = file.name.split('.').pop()
+      const fileName = `receipt_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+      const { data: uploadData, error: uploadErr } = await db.storage
+        .from('receipts')
+        .upload(fileName, file, { cacheControl: '3600', upsert: false })
+      if (uploadErr) {
+        errEl.textContent = 'Failed to upload receipt: ' + uploadErr.message
+        errEl.classList.add('show')
+        btn.disabled = false; btn.textContent = 'Save Payment'; return
+      }
+      const { data: urlData } = db.storage.from('receipts').getPublicUrl(fileName)
+      receiptUrl = urlData?.publicUrl || null
+    }
+
+    // ─── Insert record ───
+    const insertPayload = {
       member_id: parseInt(memberId), group_id: parseInt(groupId),
       cycle_number: parseInt(cycle), amount_paid: parseFloat(amount)||0,
       date_paid: date, payment_method: method, payment_status: status
-    }).select().single()
+    }
+    if (receiptUrl) insertPayload.receipt_url = receiptUrl
+
+    const { data: txn, error } = await db.from('contribution_txn')
+      .insert(insertPayload).select().single()
 
     if (error) {
-      errEl.textContent = 'Error saving. Please try again.'
+      errEl.textContent = 'Error saving: ' + (error.message || 'Please try again.')
       errEl.classList.add('show')
       btn.disabled = false; btn.textContent = 'Save Payment'; return
     }
 
+    // ─── Auto-insert penalty for LATE/MISSED ───
     if ((status === 'LATE' || status === 'MISSED') && txn) {
       await db.from('penalty').insert({
         transaction_id: txn.transaction_id,
         member_id: parseInt(memberId), group_id: parseInt(groupId),
+        cycle_number: parseInt(cycle),
         penalty_amount: status === 'MISSED' ? 100 : 50,
         reason: status, penalty_status: 'UNPAID'
       })
     }
 
-    okEl.textContent = '✅ Payment recorded successfully!'
-    okEl.classList.add('show')
+    // ─── Send notification ───
+    const memberName = document.getElementById('mMember').selectedOptions[0]?.text || ''
+    const groupName  = document.getElementById('mGroup').selectedOptions[0]?.text || ''
+    sendNotification('PAYMENT_RECORDED', {
+      member_name: memberName, group_name: groupName,
+      cycle: parseInt(cycle), amount: parseFloat(amount),
+      method, status
+    })
+
+    showToast('Payment recorded successfully!', 'success')
     btn.disabled = false; btn.textContent = 'Save Payment'
-    setTimeout(() => { closeModal(); loadTransactions() }, 1200)
+    setTimeout(() => { closeModal(); loadTransactions() }, 800)
+  }
+
+  // ─── Cycle completion detection ───
+  async function checkCycleCompletion() {
+    const groupId = document.getElementById('groupFilter').value
+    const cycleVal = document.getElementById('cycleFilter').value
+    const banner = document.getElementById('cycleCompleteBanner')
+    if (banner) banner.remove()
+
+    if (!groupId || !cycleVal) return
+
+    const group = groupsData.find(g => g.group_id === parseInt(groupId))
+    if (!group) return
+
+    const { count } = await db.from('contribution_txn')
+      .select('*', { count: 'exact', head: true })
+      .eq('group_id', parseInt(groupId))
+      .eq('cycle_number', parseInt(cycleVal))
+      .eq('payment_status', 'PAID')
+
+    if (count >= group.total_members) {
+      cycleCompleteFor = `${groupId}-${cycleVal}`
+      const page = document.querySelector('.page')
+      const div = document.createElement('div')
+      div.id = 'cycleCompleteBanner'
+      div.className = 'cycle-complete-banner'
+      div.innerHTML = `
+        <div class="ccb-icon">🎉</div>
+        <div>
+          <div class="ccb-title">Cycle ${cycleVal} Complete!</div>
+          <div class="ccb-sub">All ${group.total_members} members have paid for this cycle. No more payments can be recorded.</div>
+        </div>
+      `
+      page.insertBefore(div, page.children[1])
+    } else {
+      cycleCompleteFor = null
+    }
   }
 
   async function deleteRow(id) {

@@ -280,6 +280,7 @@
                   <tr>
                     <th>Member</th>
                     <th>Group</th>
+                    <th>Cycle</th>
                     <th>Reason</th>
                     <th>Amount</th>
                     <th>Date Imposed</th>
@@ -288,7 +289,7 @@
                   </tr>
                 </thead>
                 <tbody id="penaltyTable">
-                  <tr><td colspan="7"><div class="loading-box"><div class="spinner"></div></div></td></tr>
+                  <tr><td colspan="8"><div class="loading-box"><div class="spinner"></div></div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -383,9 +384,15 @@
         <input class="form-input" type="number" id="mAmount" value="50" min="0"/>
       </div>
     </div>
-    <div class="fg">
-      <label class="fl">Date Imposed</label>
-      <input class="form-input" type="date" id="mDate"/>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="fl">Cycle Number</label>
+        <input class="form-input" type="number" id="mCycle" min="1" value="1"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Date Imposed</label>
+        <input class="form-input" type="date" id="mDate"/>
+      </div>
     </div>
     <div class="fg">
       <label class="fl">Status</label>
@@ -404,6 +411,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/supabase.js"></script>
 <script src="../js/auth.js"></script>
+<script src="../js/notifications.js"></script>
 <script>
   let allPenalties = []
   let activeChip   = ''
@@ -561,7 +569,7 @@
   function renderTable(data) {
     const tbody = document.getElementById('penaltyTable')
     if (!data.length) {
-      tbody.innerHTML = `<tr><td colspan="7"><div class="empty">
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty">
         <div class="empty-icon">✅</div>
         <div class="empty-title">No penalties found</div>
         <div class="empty-sub">Try adjusting your filters.</div>
@@ -578,6 +586,7 @@
           </div>
         </td>
         <td style="color:var(--slate-500);font-size:12.5px;">${p.group?.group_name||'—'}</td>
+        <td><span style="font-family:var(--font-display);font-weight:700;font-size:13px;">C${p.cycle_number||'—'}</span></td>
         <td><span class="badge ${p.reason==='LATE'?'b-late':'b-missed'}">${p.reason||'—'}</span></td>
         <td><span style="font-family:var(--font-display);font-weight:800;font-size:14px;color:${p.penalty_status==='UNPAID'?'var(--danger)':'var(--slate-500)'};">₱${Number(p.penalty_amount||0).toLocaleString()}</span></td>
         <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(p.date_imposed)}</td>
@@ -654,6 +663,7 @@
     const { error } = await db.from('penalty').insert({
       member_id:      parseInt(memberId),
       group_id:       parseInt(groupId),
+      cycle_number:   parseInt(document.getElementById('mCycle').value) || null,
       penalty_amount: parseFloat(amount),
       reason,
       date_imposed:   date || new Date().toISOString().split('T')[0],
@@ -666,8 +676,14 @@
       btn.disabled = false; btn.textContent = 'Save Penalty'; return
     }
 
-    okEl.textContent = '✅ Penalty recorded successfully!'
-    okEl.classList.add('show')
+    // Send notification
+    const memberName = document.getElementById('mMember').selectedOptions[0]?.text || ''
+    const groupName  = document.getElementById('mGroup').selectedOptions[0]?.text || ''
+    sendNotification('PENALTY_IMPOSED', {
+      member_name: memberName, group_name: groupName,
+      reason, amount: parseFloat(amount)
+    })
+    showToast('Penalty recorded successfully!', 'success')
     btn.disabled = false; btn.textContent = 'Save Penalty'
     setTimeout(() => { closeModal(); loadPenalties() }, 1000)
   }

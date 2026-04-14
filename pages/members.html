@@ -562,6 +562,12 @@
     errEl.classList.remove('show'); okEl.classList.remove('show')
     if (!name) { errEl.textContent = 'Full name is required.'; errEl.classList.add('show'); return }
 
+    // Validate contact number: must be 11 digits starting with 09
+    if (contact && !/^09\d{9}$/.test(contact)) {
+      errEl.textContent = 'Contact number must be 11 digits starting with 09 (e.g. 09171234567).'
+      errEl.classList.add('show'); return
+    }
+
     const btn = document.getElementById('saveBtn')
     btn.disabled = true; btn.textContent = 'Saving...'
 
