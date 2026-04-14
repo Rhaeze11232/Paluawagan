@@ -314,12 +314,12 @@
     <div class="alert alert-error" id="modalErr"></div>
     <div class="alert alert-success" id="modalOk"></div>
     <div class="fg">
-      <label class="fl">Member</label>
-      <select class="form-input" id="mMember" style="appearance:none;"></select>
+      <label class="fl">Group</label>
+      <select class="form-input" id="mGroup" style="appearance:none;" onchange="onGroupChange()"></select>
     </div>
     <div class="fg">
-      <label class="fl">Group</label>
-      <select class="form-input" id="mGroup" style="appearance:none;" onchange="autoFillContribAmount()"></select>
+      <label class="fl">Member <span id="memberFilterHint" style="color:var(--slate-400);font-weight:400;text-transform:none;font-size:11px;">(select a group first)</span></label>
+      <select class="form-input" id="mMember" style="appearance:none;" disabled></select>
     </div>
     <div class="form-grid">
       <div class="fg">
@@ -382,7 +382,11 @@
     await requireAuth()
     loadUser()
     document.getElementById('mDate').valueAsDate = new Date()
-    await Promise.all([loadGroups(), loadMembers(), loadTransactions()])
+    await Promise.all([loadGroups(), loadTransactions()])
+    // Member dropdown starts empty/disabled — populated after group is selected
+    const mMember = document.getElementById('mMember')
+    mMember.innerHTML = '<option value="">— Select a group first —</option>'
+    mMember.disabled = true
   }
 
   async function loadUser() {
@@ -521,17 +525,51 @@
     }
   }
 
+  async function onGroupChange() {
+    autoFillContribAmount()
+    const groupId = document.getElementById('mGroup').value
+    const mMember = document.getElementById('mMember')
+    const hint = document.getElementById('memberFilterHint')
+    if (!groupId) {
+      mMember.innerHTML = '<option value="">— Select a group first —</option>'
+      mMember.disabled = true
+      hint.style.display = ''
+      return
+    }
+    mMember.innerHTML = '<option value="">Loading members...</option>'
+    mMember.disabled = true
+    await loadMembers(parseInt(groupId))
+    hint.style.display = 'none'
+  }
+
   function toggleReceiptField() {
     const method = document.getElementById('mMethod').value
     const wrap = document.getElementById('receiptFieldWrap')
     wrap.style.display = (method === 'BANK' || method === 'GCASH') ? 'block' : 'none'
   }
 
-  async function loadMembers() {
-    const { data } = await db.from('member').select('member_id, full_name').eq('status','ACTIVE').order('full_name')
+  async function loadMembers(groupId) {
     const sel = document.getElementById('mMember')
+    if (!groupId) {
+      sel.innerHTML = '<option value="">— Select a group first —</option>'
+      sel.disabled = true
+      return
+    }
+    // Fetch members linked to this group via group_member junction table
+    const { data, error } = await db
+      .from('group_member')
+      .select('member:member_id(member_id, full_name)')
+      .eq('group_id', groupId)
+      .order('member_id')
+    if (error || !data?.length) {
+      sel.innerHTML = '<option value="">No members in this group</option>'
+      sel.disabled = true
+      return
+    }
+    const members = data.map(r => r.member).filter(Boolean).sort((a,b) => a.full_name.localeCompare(b.full_name))
     sel.innerHTML = '<option value="">— Select member —</option>'
-    data?.forEach(m => sel.innerHTML += `<option value="${m.member_id}">${m.full_name}</option>`)
+    members.forEach(m => sel.innerHTML += `<option value="${m.member_id}">${m.full_name}</option>`)
+    sel.disabled = false
   }
 
   function openModal() {
