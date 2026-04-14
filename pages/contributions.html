@@ -686,13 +686,20 @@
 
     // ─── Auto-insert penalty for LATE/MISSED ───
     if ((status === 'LATE' || status === 'MISSED') && txn) {
-      await db.from('penalty').insert({
+      const { error: penErr } = await db.from('penalty').insert({
         transaction_id: txn.transaction_id,
-        member_id: parseInt(memberId), group_id: parseInt(groupId),
+        member_id: parseInt(memberId),
+        group_id: parseInt(groupId),
         cycle_number: parseInt(cycle),
         penalty_amount: status === 'MISSED' ? 100 : 50,
-        reason: status, penalty_status: 'UNPAID'
+        reason: status,
+        penalty_status: 'UNPAID',
+        date_imposed: date || new Date().toISOString().split('T')[0]
       })
+      if (penErr) {
+        console.error('Penalty auto-insert failed:', penErr)
+        showToast('Payment saved, but penalty record failed. Please add it manually.', 'error')
+      }
     }
 
     // ─── Send notification ───
