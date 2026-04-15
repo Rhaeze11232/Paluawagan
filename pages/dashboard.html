@@ -219,6 +219,8 @@
         <a href="penalties.html" class="nav-item"><span class="nav-icon">⚠️</span>Penalties<span class="nav-badge" id="badge-penalty">0</span></a>
         <div class="nav-section-label">System</div>
         <a href="audit.html" class="nav-item"><span class="nav-icon">📋</span>Audit Log</a>
+        <div class="nav-section-label">Community</div>
+        <a href="join.html" target="_blank" class="nav-item"><span class="nav-icon">🙋</span>Join Requests<span class="nav-badge" id="badge-join">0</span></a>
       </div>
       <div class="sidebar-footer">
         <div class="user-card">
@@ -245,6 +247,26 @@
     </div>
 
     <div class="page">
+
+      <!-- OVERDUE ALERT BANNER -->
+      <div id="overdueBanner" style="display:none;background:linear-gradient(135deg,#7f1d1d,#ef4444);border-radius:18px;padding:18px 24px;margin-bottom:20px;align-items:center;gap:16px;box-shadow:0 8px 24px rgba(239,68,68,.25);animation:fadeUp .3s ease;">
+        <div style="font-size:26px;">🚨</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:white;" id="overdueTitle">Overdue Payments Detected</div>
+          <div style="font-size:12.5px;color:rgba(255,255,255,.75);margin-top:3px;" id="overdueSub">Scanning...</div>
+        </div>
+        <button onclick="document.getElementById('overdueSection').scrollIntoView({behavior:'smooth'})" style="padding:9px 20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;">View Details ↓</button>
+      </div>
+
+      <!-- JOIN REQUESTS BANNER -->
+      <div id="joinBanner" style="display:none;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:18px;padding:18px 24px;margin-bottom:20px;align-items:center;gap:16px;box-shadow:0 8px 24px rgba(37,99,235,.25);animation:fadeUp .3s ease;">
+        <div style="font-size:26px;">🙋</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:white;" id="joinBannerTitle">New Join Requests</div>
+          <div style="font-size:12.5px;color:rgba(255,255,255,.75);margin-top:3px;" id="joinBannerSub">Pending applicants waiting for review.</div>
+        </div>
+        <button onclick="document.getElementById('joinSection').scrollIntoView({behavior:'smooth'})" style="padding:9px 20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;">Review Now ↓</button>
+      </div>
 
       <!-- WELCOME BANNER -->
       <div class="welcome-banner">
@@ -355,6 +377,38 @@
         <div style="grid-column:1/-1;"><div class="loading-box"><div class="spinner"></div></div></div>
       </div>
 
+      <!-- OVERDUE MEMBERS DETAIL TABLE -->
+      <div id="overdueSection" style="display:none;margin-bottom:24px;">
+        <div class="sec-head">
+          <div class="sec-title">🚨 Overdue — Members Whose Payout is Past Due</div>
+          <button onclick="autoLogMissed()" style="padding:7px 16px;background:var(--danger);color:white;border:none;border-radius:var(--radius-xs);font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:all .18s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">⚡ Auto-Log Missing Penalties</button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Member</th><th>Group</th><th>Cycle</th><th>Scheduled Date</th><th>Status</th></tr></thead>
+              <tbody id="overdueTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOIN REQUESTS REVIEW TABLE -->
+      <div id="joinSection" style="display:none;margin-bottom:24px;">
+        <div class="sec-head">
+          <div class="sec-title">🙋 Pending Join Requests</div>
+          <span id="joinCount" style="font-size:12.5px;color:var(--slate-400);"></span>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Contact</th><th>Group Applied</th><th>Submitted</th><th>Actions</th></tr></thead>
+              <tbody id="joinTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- UPCOMING PAYOUTS -->
       <div class="sec-head" style="margin-top:4px;">
         <div class="sec-title">Upcoming Payouts</div>
@@ -388,11 +442,16 @@
     await requireAuth()
     document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
     await Promise.all([loadUser(), loadStats(), loadRecent(), loadGroups(), loadPayouts()])
+    // Automation checks — run after core data
+    checkOverdue()
+    loadJoinRequests()
   }
 
   async function loadUser() {
     const user = await getCurrentUser(); if (!user) return
     const { data } = await db.from('system_user').select('role, member:member_id(full_name)').eq('user_id', user.id).maybeSingle()
+    // Redirect members away from admin dashboard
+    if (data?.role === 'MEMBER') { window.location.href = 'user-portal.html'; return }
     const name = data?.member?.full_name || user.email?.split('@')[0] || 'Organizer'
     document.getElementById('userName').textContent     = name
     document.getElementById('userRole').textContent     = data?.role || 'Organizer'
@@ -586,6 +645,183 @@
         <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(p.scheduled_date)}</td>
         <td><span class="badge ${bMap[p.payout_status]||'b-pending'}">${p.payout_status}</span></td>
       </tr>`).join('')
+  }
+
+  // ── OVERDUE DETECTION (runs automatically) ───────────
+  async function checkOverdue() {
+    const today = new Date().toISOString().split('T')[0]
+
+    // Find payout_schedule rows past scheduled_date still PENDING
+    const { data: overduePayouts } = await db.from('payout_schedule')
+      .select('*, member:member_id(full_name), group:group_id(group_name)')
+      .lt('scheduled_date', today).eq('payout_status', 'PENDING')
+
+    if (overduePayouts?.length > 0) {
+      // Auto-update status to OVERDUE in database
+      await db.from('payout_schedule')
+        .update({ payout_status: 'OVERDUE' })
+        .lt('scheduled_date', today).eq('payout_status', 'PENDING')
+
+      // Show the alert banner
+      const names = overduePayouts.slice(0,3).map(o => o.member?.full_name).filter(Boolean).join(', ')
+      document.getElementById('overdueTitle').textContent = `🚨 ${overduePayouts.length} overdue payout${overduePayouts.length > 1 ? 's' : ''} auto-marked as OVERDUE`
+      document.getElementById('overdueSub').textContent   = `Affected: ${names}${overduePayouts.length > 3 ? ` +${overduePayouts.length - 3} more` : ''}`
+      document.getElementById('overdueBanner').style.display = 'flex'
+      document.getElementById('overdueSection').style.display = 'block'
+
+      // Populate the detail table
+      document.getElementById('overdueTable').innerHTML = overduePayouts.map(o => `
+        <tr>
+          <td><strong>${o.member?.full_name||'—'}</strong></td>
+          <td style="color:var(--slate-500);font-size:12.5px;">${o.group?.group_name||'—'}</td>
+          <td style="font-family:var(--font-display);font-weight:700;">C${o.cycle_number}</td>
+          <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(o.scheduled_date)}</td>
+          <td><span class="badge b-overdue">OVERDUE</span></td>
+        </tr>`).join('')
+
+      // Reload payout stats
+      loadPayouts()
+    }
+
+    // Auto-log missing penalties for MISSED contribution_txn without a penalty record
+    const { data: missed } = await db.from('contribution_txn')
+      .select('transaction_id, member_id, group_id').eq('payment_status', 'MISSED')
+
+    if (missed?.length > 0) {
+      let autoLogged = 0
+      for (const txn of missed) {
+        const { data: existing } = await db.from('penalty')
+          .select('penalty_id').eq('transaction_id', txn.transaction_id).maybeSingle()
+        if (!existing) {
+          const { error } = await db.from('penalty').insert({
+            transaction_id: txn.transaction_id,
+            member_id:      txn.member_id,
+            group_id:       txn.group_id,
+            penalty_amount: 100,
+            reason:         'MISSED',
+            penalty_status: 'UNPAID',
+            date_imposed:   today
+          })
+          if (!error) autoLogged++
+        }
+      }
+      if (autoLogged > 0) {
+        dashToast(`⚡ Auto-logged ${autoLogged} missing penalty record${autoLogged > 1 ? 's' : ''}`, '#f59e0b')
+        const { count } = await db.from('penalty').select('*',{count:'exact',head:true}).eq('penalty_status','UNPAID')
+        document.getElementById('badge-penalty').textContent = count || 0
+        document.getElementById('statPenalties').textContent = count || 0
+      }
+    }
+  }
+
+  async function autoLogMissed() {
+    if (!confirm('Auto-create penalty records for all MISSED payments with no penalty yet?')) return
+    await checkOverdue()
+    dashToast('Auto-log complete! Check Penalties page.', '#0d9488')
+  }
+
+  // ── JOIN REQUESTS ─────────────────────────────────────
+  async function loadJoinRequests() {
+    try {
+      const { data, error } = await db.from('join_request')
+        .select('*, group:group_id(group_name)').eq('status', 'PENDING')
+        .order('submitted_at', { ascending: false })
+      if (error) { console.warn('join_request table not found — skipping.'); return }
+
+      const pending = data || []
+      document.getElementById('badge-join').textContent = pending.length
+      if (!pending.length) return
+
+      document.getElementById('joinBannerTitle').textContent = `🙋 ${pending.length} Pending Join Request${pending.length > 1 ? 's' : ''}`
+      document.getElementById('joinBannerSub').textContent   = `${pending.length} applicant${pending.length > 1 ? 's' : ''} waiting for your approval.`
+      document.getElementById('joinBanner').style.display    = 'flex'
+      document.getElementById('joinSection').style.display   = 'block'
+      document.getElementById('joinCount').textContent       = `${pending.length} pending`
+
+      document.getElementById('joinTable').innerHTML = pending.map(r => `
+        <tr id="jr-${r.request_id}">
+          <td>
+            <div style="font-weight:700;">${r.full_name}</div>
+            ${r.message ? `<div style="font-size:11.5px;color:var(--slate-400);margin-top:2px;">&ldquo;${r.message.slice(0,70)}${r.message.length>70?'...':''}&rdquo;</div>` : ''}
+          </td>
+          <td style="color:var(--slate-500);font-size:12.5px;">${r.contact_number||'—'}</td>
+          <td style="font-weight:600;">${r.group?.group_name||'—'}</td>
+          <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(r.submitted_at)}</td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button onclick="handleJoinRequest(${r.request_id},'${r.full_name.replace(/'/g,'\\&apos;')}',${r.group_id},'APPROVED')"
+                style="padding:5px 12px;background:var(--teal-50);border:1px solid var(--teal-200);color:var(--teal-700);border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;"
+                onmouseover="this.style.background='var(--teal-600)';this.style.color='white'"
+                onmouseout="this.style.background='var(--teal-50)';this.style.color='var(--teal-700)'">✓ Approve</button>
+              <button onclick="handleJoinRequest(${r.request_id},'${r.full_name.replace(/'/g,'\\&apos;')}',${r.group_id},'REJECTED')"
+                style="padding:5px 12px;background:var(--danger-bg);border:1px solid var(--danger-100);color:var(--danger);border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;"
+                onmouseover="this.style.background='var(--danger)';this.style.color='white'"
+                onmouseout="this.style.background='var(--danger-bg)';this.style.color='var(--danger)'">✕ Reject</button>
+            </div>
+          </td>
+        </tr>`).join('')
+    } catch(e) { console.warn('Join requests unavailable:', e.message) }
+  }
+
+  async function handleJoinRequest(requestId, name, groupId, action) {
+    const verb = action === 'APPROVED' ? 'approve' : 'reject'
+    if (!confirm(`${verb.charAt(0).toUpperCase()+verb.slice(1)} join request from ${name}?`)) return
+
+    await db.from('join_request').update({ status: action }).eq('request_id', requestId)
+
+    if (action === 'APPROVED' && name) {
+      // 1. Create member record
+      const { data: newMember } = await db.from('member').insert({
+        full_name: name, status: 'ACTIVE',
+        date_joined: new Date().toISOString().split('T')[0]
+      }).select().single()
+
+      // 2. Assign to group with next payout order
+      if (newMember && groupId) {
+        const { data: existing } = await db.from('group_member')
+          .select('payout_order').eq('group_id', groupId)
+          .order('payout_order', {ascending:false}).limit(1)
+        const nextOrder = (existing?.[0]?.payout_order || 0) + 1
+        await db.from('group_member').insert({
+          group_id: groupId, member_id: newMember.member_id, payout_order: nextOrder
+        })
+      }
+      dashToast(`✅ ${name} approved and added as a member!`, '#0d9488')
+    } else {
+      dashToast(`Request from ${name} rejected.`, '#64748b')
+    }
+
+    document.getElementById('jr-' + requestId)?.remove()
+    const left = document.getElementById('joinTable').querySelectorAll('tr[id]').length
+    if (!left) {
+      document.getElementById('joinSection').style.display = 'none'
+      document.getElementById('joinBanner').style.display  = 'none'
+    }
+    const badgeEl = document.getElementById('badge-join')
+    badgeEl.textContent = Math.max(0, parseInt(badgeEl.textContent||'0') - 1)
+    loadStats()
+  }
+
+  // Lightweight toast for dashboard (notifications.js not loaded here)
+  function dashToast(msg, color='#0d9488') {
+    let c = document.getElementById('toast-container')
+    if (!c) {
+      c = document.createElement('div')
+      c.id = 'toast-container'
+      c.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;'
+      document.body.appendChild(c)
+    }
+    const t = document.createElement('div')
+    t.style.cssText = `background:white;border-left:4px solid ${color};padding:13px 18px;border-radius:10px;font-size:13px;font-weight:600;font-family:'Instrument Sans',sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.12);pointer-events:auto;min-width:260px;animation:toastIn .3s ease;`
+    t.textContent = msg
+    if (!document.getElementById('dash-toast-style')) {
+      const s = document.createElement('style')
+      s.id = 'dash-toast-style'
+      s.textContent = '@keyframes toastIn{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}'
+      document.head.appendChild(s)
+    }
+    c.appendChild(t)
+    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300) }, 4000)
   }
 
   init()

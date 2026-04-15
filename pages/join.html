@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PaluwagAN — Join a Group</title>
+  <meta name="description" content="Submit a request to join a paluwagan savings group."/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal-900:#042f2e;--teal-800:#134e4a;--teal-700:#115e59;--teal-600:#0d9488;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;--teal-100:#ccfbf1;--teal-50:#f0fdfa;
+      --green-500:#22c55e;--green-100:#dcfce7;
+      --slate-900:#0f172a;--slate-700:#334155;--slate-500:#64748b;--slate-400:#94a3b8;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+      --white:#ffffff;--danger:#ef4444;--danger-bg:#fef2f2;
+      --radius:18px;--radius-sm:12px;--radius-xs:8px;
+      --font-display:'Syne',sans-serif;--font-body:'Instrument Sans',sans-serif;
+      --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+      --shadow-teal:0 8px 30px rgba(20,184,166,.25);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-body);min-height:100vh;display:flex;-webkit-font-smoothing:antialiased;}
+
+    /* ── LEFT PANEL ── */
+    .left{width:44%;background:var(--teal-900);display:flex;flex-direction:column;justify-content:center;padding:64px 52px;position:relative;overflow:hidden;}
+    .left::before{content:'';position:absolute;top:-120px;right:-120px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.12),transparent 65%);}
+    .left::after{content:'';position:absolute;bottom:-80px;left:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(20,184,166,.08),transparent 65%);}
+    .lsl{position:relative;z-index:1;}
+    .back-link{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(255,255,255,.5);font-weight:600;text-decoration:none;margin-bottom:36px;padding:7px 14px;border-radius:var(--radius-xs);border:1px solid rgba(255,255,255,.1);transition:all .18s;}
+    .back-link:hover{color:var(--teal-300);border-color:rgba(45,212,191,.3);}
+    .eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal-400);margin-bottom:14px;}
+    .big-title{font-family:var(--font-display);font-size:40px;font-weight:800;color:white;line-height:1.1;margin-bottom:16px;}
+    .big-title span{color:var(--teal-400);}
+    .body-text{font-size:14px;color:rgba(255,255,255,.5);line-height:1.8;margin-bottom:32px;max-width:340px;}
+    .feat-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+    .feat-icon{width:34px;height:34px;border-radius:9px;background:rgba(20,184,166,.15);border:1px solid rgba(20,184,166,.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:2px;}
+    .feat-title{font-size:13.5px;font-weight:700;color:white;margin-bottom:2px;}
+    .feat-sub{font-size:12px;color:rgba(255,255,255,.45);}
+
+    /* ── RIGHT PANEL ── */
+    .right{flex:1;display:flex;align-items:center;justify-content:center;padding:48px;background:var(--slate-50);overflow-y:auto;}
+    .form-box{width:100%;max-width:420px;}
+    .form-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal-600);margin-bottom:8px;}
+    .form-title{font-family:var(--font-display);font-size:26px;font-weight:800;color:var(--slate-900);margin-bottom:6px;}
+    .form-sub{font-size:13.5px;color:var(--slate-500);margin-bottom:28px;line-height:1.6;}
+
+    /* ── FORM ELEMENTS ── */
+    .fg{margin-bottom:18px;}
+    .fl{display:block;font-size:11px;font-weight:700;color:var(--slate-500);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
+    .fi{width:100%;padding:11px 14px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13.5px;color:var(--slate-900);background:white;outline:none;transition:all .18s;}
+    .fi:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(20,184,166,.12);}
+    .fi-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .submit-btn{width:100%;padding:13px;background:var(--teal-600);color:white;border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:8px;letter-spacing:.3px;}
+    .submit-btn:hover{background:var(--teal-700);transform:translateY(-1px);box-shadow:var(--shadow-teal);}
+    .submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none;}
+    .alert{padding:12px 15px;border-radius:var(--radius-xs);font-size:13px;margin-bottom:18px;display:none;}
+    .alert.show{display:block;}
+    .alert-error{background:var(--danger-bg);color:#b91c1c;border:1px solid #fecaca;}
+    .alert-success{background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-100);}
+    .note{font-size:12px;color:var(--slate-400);text-align:center;margin-top:18px;line-height:1.7;}
+    .note a{color:var(--teal-600);font-weight:600;text-decoration:none;}
+    .note a:hover{text-decoration:underline;}
+
+    /* ── SUCCESS STATE ── */
+    .success-box{text-align:center;padding:32px 20px;display:none;}
+    .success-icon{font-size:64px;margin-bottom:20px;animation:bounceIn .5s ease;}
+    @keyframes bounceIn{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+    .success-title{font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--slate-900);margin-bottom:10px;}
+    .success-sub{font-size:14px;color:var(--slate-500);line-height:1.7;margin-bottom:24px;}
+    .success-ref{display:inline-block;background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-100);padding:8px 18px;border-radius:var(--radius-xs);font-family:var(--font-display);font-weight:700;font-size:14px;margin-bottom:24px;}
+    .back-btn{padding:11px 28px;border-radius:var(--radius-xs);background:var(--teal-600);color:white;border:none;font-family:var(--font-body);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .18s;}
+    .back-btn:hover{background:var(--teal-700);}
+
+    /* ── SPINNER ── */
+    .spinner-sm{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    @media(max-width:768px){
+      body{flex-direction:column;}
+      .left{width:100%;padding:36px 28px;min-height:auto;}
+      .right{padding:32px 24px;}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="lsl">
+      <a href="../index.html" class="back-link">← Back to Login</a>
+      <div class="eyebrow">Join PaluwagAN</div>
+      <div class="big-title">Start your <span>savings</span> journey</div>
+      <div class="body-text">Submit a request to join a paluwagan group. Your organizer will review it and get back to you shortly.</div>
+
+      <div class="feat-item">
+        <div class="feat-icon">💳</div>
+        <div>
+          <div class="feat-title">Track every contribution</div>
+          <div class="feat-sub">See your payment history in real time</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">📅</div>
+        <div>
+          <div class="feat-title">Know your payout date</div>
+          <div class="feat-sub">Clear rotation schedule, no confusion</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🔔</div>
+        <div>
+          <div class="feat-title">Automated reminders</div>
+          <div class="feat-sub">Never miss a payment deadline</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="form-box">
+
+      <!-- FORM STATE -->
+      <div id="formState">
+        <div class="form-eyebrow">Join Request</div>
+        <div class="form-title">Apply to join</div>
+        <div class="form-sub">Fill in your details and choose which group you'd like to join. Requests are reviewed by the organizer.</div>
+
+        <div class="alert alert-error" id="errMsg"></div>
+        <div class="alert alert-success" id="okMsg"></div>
+
+        <div class="fg">
+          <label class="fl">Full Name *</label>
+          <input class="fi" id="jName" placeholder="e.g. Maria Santos"/>
+        </div>
+
+        <div class="form-grid">
+          <div class="fg">
+            <label class="fl">Contact Number *</label>
+            <input class="fi" id="jContact" placeholder="09XXXXXXXXX" maxlength="11"/>
+          </div>
+          <div class="fg">
+            <label class="fl">Date of Birth</label>
+            <input class="fi" type="date" id="jDob"/>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label class="fl">Address</label>
+          <input class="fi" id="jAddress" placeholder="e.g. Quezon City, Metro Manila"/>
+        </div>
+
+        <div class="fg">
+          <label class="fl">Which Group to Join? *</label>
+          <select class="fi fi-sel" id="jGroup">
+            <option value="">— Loading groups... —</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label class="fl">Message (Optional)</label>
+          <textarea class="fi" id="jMessage" rows="3" placeholder="Any additional information for the organizer..." style="resize:vertical;"></textarea>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitRequest()">Submit Join Request →</button>
+
+        <div class="note">
+          Already have an account? <a href="../index.html">Sign in here</a><br/>
+          Questions? Contact your organizer directly.
+        </div>
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="success-box" id="successState">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Request Submitted!</div>
+        <div class="success-sub">Your join request has been sent to the organizer. You'll be contacted via your phone number once approved.</div>
+        <div class="success-ref" id="refNumber">Ref: #000000</div>
+        <br/>
+        <button class="back-btn" onclick="window.location.href='../index.html'">← Back to Login</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <script>
+    // Load available groups on page load
+    async function loadGroups() {
+      const { data } = await db.from('paluwagan_group').select('group_id, group_name').eq('status', 'ONGOING').order('group_name')
+      const sel = document.getElementById('jGroup')
+      if (!data?.length) {
+        sel.innerHTML = '<option value="">— No open groups at this time —</option>'
+        return
+      }
+      sel.innerHTML = '<option value="">— Select a group —</option>'
+      data.forEach(g => sel.innerHTML += `<option value="${g.group_id}">${g.group_name}</option>`)
+    }
+
+    async function submitRequest() {
+      const name    = document.getElementById('jName').value.trim()
+      const contact = document.getElementById('jContact').value.trim()
+      const address = document.getElementById('jAddress').value.trim()
+      const groupId = document.getElementById('jGroup').value
+      const message = document.getElementById('jMessage').value.trim()
+      const errEl   = document.getElementById('errMsg')
+      const okEl    = document.getElementById('okMsg')
+      const btn     = document.getElementById('submitBtn')
+
+      errEl.classList.remove('show'); okEl.classList.remove('show')
+
+      // Validation
+      if (!name) { errEl.textContent = 'Full name is required.'; errEl.classList.add('show'); return }
+      if (!contact) { errEl.textContent = 'Contact number is required.'; errEl.classList.add('show'); return }
+      if (!/^09\d{9}$/.test(contact)) { errEl.textContent = 'Contact must be 11 digits starting with 09 (e.g. 09171234567).'; errEl.classList.add('show'); return }
+      if (!groupId) { errEl.textContent = 'Please select a group.'; errEl.classList.add('show'); return }
+
+      btn.disabled = true
+      btn.innerHTML = '<span class="spinner-sm"></span>Submitting...'
+
+      const { data, error } = await db.from('join_request').insert({
+        full_name:      name,
+        contact_number: contact,
+        address:        address || null,
+        group_id:       parseInt(groupId),
+        message:        message || null,
+        status:         'PENDING',
+        submitted_at:   new Date().toISOString()
+      }).select().single()
+
+      if (error) {
+        errEl.textContent = 'Error submitting request: ' + (error.message || 'Please try again.')
+        errEl.classList.add('show')
+        btn.disabled = false
+        btn.textContent = 'Submit Join Request →'
+        return
+      }
+
+      // Show success state
+      document.getElementById('formState').style.display   = 'none'
+      document.getElementById('successState').style.display = 'block'
+      document.getElementById('refNumber').textContent = 'Ref: #' + String(data.request_id).padStart(6, '0')
+    }
+
+    loadGroups()
+  </script>
+</body>
+</html>

@@ -144,8 +144,14 @@
       errEl.classList.add('hidden')
 
       try {
-        await signIn(email, password)
-        window.location.href = 'pages/dashboard.html'
+        const { user } = await signIn(email, password)
+        // Check role and route accordingly
+        const { data: userData } = await db.from('system_user').select('role').eq('user_id', user.id).maybeSingle()
+        if (userData?.role === 'MEMBER') {
+          window.location.href = 'pages/user-portal.html'
+        } else {
+          window.location.href = 'pages/dashboard.html'
+        }
       } catch (err) {
         errEl.textContent = 'Invalid email or password. Please try again.'
         errEl.classList.remove('hidden')

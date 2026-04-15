@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PaluwagAN — My Portal</title>
+  <meta name="description" content="View your paluwagan contributions, penalties, and payout schedule."/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal-900:#042f2e;--teal-800:#134e4a;--teal-700:#115e59;--teal-600:#0d9488;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;--teal-100:#ccfbf1;--teal-50:#f0fdfa;
+      --green-500:#22c55e;--green-100:#dcfce7;
+      --slate-900:#0f172a;--slate-700:#334155;--slate-600:#475569;--slate-500:#64748b;--slate-400:#94a3b8;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+      --white:#ffffff;--warn:#f59e0b;--warn-bg:#fffbeb;--warn-100:#fef3c7;--danger:#ef4444;--danger-bg:#fef2f2;--danger-100:#fee2e2;
+      --radius:18px;--radius-sm:12px;--radius-xs:8px;
+      --font-display:'Syne',sans-serif;--font-body:'Instrument Sans',sans-serif;
+      --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+      --shadow-md:0 4px 6px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.08);
+      --shadow-teal:0 8px 30px rgba(20,184,166,.2);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-body);background:#f0f4f8;color:var(--slate-900);-webkit-font-smoothing:antialiased;min-height:100vh;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--teal-300);border-radius:3px;}
+
+    /* ── TOPBAR ── */
+    .topbar{background:var(--teal-900);height:64px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.2);}
+    .brand{display:flex;align-items:center;gap:12px;}
+    .brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal-500),var(--teal-700));display:flex;align-items:center;justify-content:center;font-size:18px;}
+    .brand-name{font-family:var(--font-display);font-size:18px;font-weight:800;color:white;}
+    .brand-name span{color:var(--teal-400);}
+    .tb-right{display:flex;align-items:center;gap:12px;}
+    .user-chip{display:flex;align-items:center;gap:10px;padding:7px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);}
+    .user-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--teal-400),var(--teal-600));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;}
+    .user-name-tb{font-size:13px;font-weight:600;color:white;}
+    .btn-logout{padding:7px 16px;border-radius:var(--radius-xs);border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.7);font-family:var(--font-body);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .18s;}
+    .btn-logout:hover{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.5);color:white;}
+
+    /* ── PAGE ── */
+    .page{max-width:1100px;margin:0 auto;padding:28px 24px;animation:fadeUp .3s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* ── HERO BANNER ── */
+    .hero{background:linear-gradient(135deg,var(--teal-900) 0%,var(--teal-700) 60%,var(--teal-600) 100%);border-radius:var(--radius);padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;box-shadow:var(--shadow-teal);}
+    .hero::before{content:'₱';position:absolute;right:-20px;top:-30px;font-family:var(--font-display);font-size:160px;font-weight:900;color:rgba(255,255,255,.04);pointer-events:none;}
+    .hero-left{position:relative;z-index:1;}
+    .hero-greeting{font-size:12.5px;color:rgba(255,255,255,.6);font-weight:500;margin-bottom:6px;}
+    .hero-name{font-family:var(--font-display);font-size:26px;font-weight:800;color:white;margin-bottom:8px;}
+    .hero-name span{color:var(--teal-300);}
+    .hero-sub{font-size:13px;color:rgba(255,255,255,.5);}
+    .hero-right{position:relative;z-index:1;display:flex;gap:24px;}
+    .hero-stat{text-align:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--radius-sm);padding:14px 20px;}
+    .hs-val{font-family:var(--font-display);font-size:22px;font-weight:800;color:white;line-height:1;}
+    .hs-lbl{font-size:10.5px;color:rgba(255,255,255,.55);margin-top:4px;font-weight:500;}
+
+    /* ── ALERTS ── */
+    .alert-overdue{background:linear-gradient(135deg,#7f1d1d,var(--danger));border-radius:var(--radius);padding:18px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;animation:fadeUp .3s ease;}
+    .ao-icon{font-size:24px;}
+    .ao-text{flex:1;}
+    .ao-title{font-family:var(--font-display);font-size:15px;font-weight:800;color:white;}
+    .ao-sub{font-size:12.5px;color:rgba(255,255,255,.7);margin-top:2px;}
+
+    /* ── STAT STRIP ── */
+    .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+    .ss-card{background:white;border-radius:var(--radius);padding:20px 22px;border:1px solid var(--slate-100);display:flex;align-items:center;gap:16px;box-shadow:var(--shadow);transition:transform .2s;}
+    .ss-card:hover{transform:translateY(-2px);}
+    .ss-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .ss-teal{background:var(--teal-50);}
+    .ss-warn{background:var(--warn-bg);}
+    .ss-green{background:var(--green-100);}
+    .ss-danger{background:var(--danger-bg);}
+    .ss-val{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--slate-900);line-height:1;}
+    .ss-lbl{font-size:12px;color:var(--slate-400);margin-top:3px;font-weight:500;}
+
+    /* ── TABS ── */
+    .tabs{display:flex;gap:4px;background:white;padding:6px;border-radius:var(--radius-sm);border:1px solid var(--slate-100);box-shadow:var(--shadow);margin-bottom:20px;}
+    .tab{flex:1;padding:10px 16px;border-radius:var(--radius-xs);border:none;background:transparent;font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:7px;}
+    .tab:hover{background:var(--slate-50);color:var(--slate-700);}
+    .tab.active{background:var(--teal-600);color:white;box-shadow:0 4px 12px rgba(13,148,136,.3);}
+    .tab-count{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,.25);}
+    .tab:not(.active) .tab-count{background:var(--slate-100);color:var(--slate-500);}
+
+    /* ── CARD ── */
+    .card{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);overflow:hidden;box-shadow:var(--shadow);}
+    .card-head{padding:18px 22px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between;}
+    .card-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--slate-900);}
+    .card-meta{font-size:12.5px;color:var(--slate-400);}
+
+    /* ── TABLE ── */
+    .tbl-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{padding:11px 18px;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--slate-400);background:var(--slate-50);border-bottom:1px solid var(--slate-100);text-align:left;white-space:nowrap;}
+    tbody td{padding:14px 18px;font-size:13px;border-bottom:1px solid var(--slate-50);color:var(--slate-700);}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:var(--teal-50);}
+
+    /* ── BADGES ── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge::before{content:'●';font-size:6px;}
+    .b-paid{background:var(--green-100);color:#15803d;}
+    .b-late{background:var(--warn-100);color:#92400e;}
+    .b-missed{background:var(--danger-100);color:#b91c1c;}
+    .b-unpaid{background:var(--danger-100);color:#b91c1c;}
+    .b-pending{background:#dbeafe;color:#1d4ed8;}
+    .b-released{background:var(--teal-100);color:var(--teal-700);}
+    .b-overdue{background:var(--danger-100);color:#b91c1c;}
+
+    /* ── PAYOUT STEPPER ── */
+    .stepper-wrap{padding:24px;}
+    .stepper{display:flex;align-items:center;gap:0;margin-bottom:24px;overflow-x:auto;padding-bottom:8px;}
+    .step{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;}
+    .step-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;transition:all .2s;}
+    .step.done .step-dot{background:var(--teal-500);color:white;}
+    .step.current .step-dot{background:var(--teal-600);color:white;box-shadow:0 0 0 4px rgba(20,184,166,.25);transform:scale(1.15);}
+    .step.next .step-dot{background:var(--slate-100);color:var(--slate-400);border:2px dashed var(--slate-300);}
+    .step.mine .step-dot{background:linear-gradient(135deg,var(--warn),#fbbf24);color:white;box-shadow:0 0 0 4px rgba(245,158,11,.2);}
+    .step-name{font-size:11px;font-weight:600;color:var(--slate-500);text-align:center;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .step.current .step-name{color:var(--teal-600);font-weight:700;}
+    .step.mine .step-name{color:var(--warn);font-weight:700;}
+    .step-line{flex:1;height:2px;min-width:20px;}
+    .step-line.done{background:var(--teal-400);}
+    .step-line.next{background:var(--slate-200);border-top:2px dashed var(--slate-200);}
+    .payout-info{background:var(--teal-50);border:1px solid var(--teal-100);border-radius:var(--radius-sm);padding:16px 20px;display:flex;align-items:center;gap:16px;}
+    .pi-icon{font-size:28px;}
+    .pi-title{font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--teal-800);}
+    .pi-sub{font-size:12.5px;color:var(--teal-600);margin-top:3px;}
+
+    /* ── GROUPS ── */
+    .groups-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:20px;}
+    .group-tile{background:var(--slate-50);border:1px solid var(--slate-100);border-radius:var(--radius-sm);padding:16px 18px;}
+    .gt-name{font-family:var(--font-display);font-size:14px;font-weight:800;color:var(--slate-900);margin-bottom:4px;}
+    .gt-meta{font-size:12px;color:var(--slate-400);margin-bottom:10px;}
+    .gt-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+
+    /* ── EMPTY ── */
+    .empty{padding:52px 20px;text-align:center;}
+    .empty-icon{font-size:44px;margin-bottom:14px;opacity:.35;}
+    .empty-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--slate-500);margin-bottom:5px;}
+    .empty-sub{font-size:13px;color:var(--slate-400);}
+
+    /* ── SPINNER ── */
+    .spinner{width:22px;height:22px;border:2.5px solid var(--slate-200);border-top-color:var(--teal-500);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-box{padding:48px;display:flex;align-items:center;justify-content:center;}
+
+    /* ── TAB PANELS ── */
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🌿</div>
+      <div class="brand-name">Paluwag<span>AN</span></div>
+    </div>
+    <div class="tb-right">
+      <div class="user-chip">
+        <div class="user-av" id="userInitials">--</div>
+        <div class="user-name-tb" id="userName">Loading...</div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">⎋ Sign Out</button>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ALERT: if overdue -->
+    <div class="alert-overdue" id="overdueAlert" style="display:none;">
+      <div class="ao-icon">⚠️</div>
+      <div class="ao-text">
+        <div class="ao-title" id="overdueTitle">You have an overdue payment</div>
+        <div class="ao-sub" id="overdueSub">Please contact your group organizer immediately to settle this.</div>
+      </div>
+    </div>
+
+    <!-- HERO BANNER -->
+    <div class="hero">
+      <div class="hero-left">
+        <div class="hero-greeting">Welcome back 👋</div>
+        <div class="hero-name">Hello, <span id="heroName">Member</span></div>
+        <div class="hero-sub" id="heroGroups">Loading your group info...</div>
+      </div>
+      <div class="hero-right" id="heroStats">
+        <div class="hero-stat">
+          <div class="hs-val" id="hsTotalPaid">—</div>
+          <div class="hs-lbl">Total Paid</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hs-val" id="hsPenalties">—</div>
+          <div class="hs-lbl">Penalties</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hs-val" id="hsGroups">—</div>
+          <div class="hs-lbl">Groups</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAT STRIP -->
+    <div class="stat-strip">
+      <div class="ss-card">
+        <div class="ss-ico ss-teal">💳</div>
+        <div>
+          <div class="ss-val" id="statPaid">—</div>
+          <div class="ss-lbl">Total Contributed</div>
+        </div>
+      </div>
+      <div class="ss-card">
+        <div class="ss-ico ss-warn">⚠️</div>
+        <div>
+          <div class="ss-val" id="statPenCount">—</div>
+          <div class="ss-lbl">Active Penalties</div>
+        </div>
+      </div>
+      <div class="ss-card">
+        <div class="ss-ico ss-green">📅</div>
+        <div>
+          <div class="ss-val" id="statNextPayout">—</div>
+          <div class="ss-lbl">Next Payout</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" id="tab-contribs" onclick="switchTab('contribs')">
+        💳 My Contributions <span class="tab-count" id="cntContribs">0</span>
+      </button>
+      <button class="tab" id="tab-penalties" onclick="switchTab('penalties')">
+        ⚠️ My Penalties <span class="tab-count" id="cntPenalties">0</span>
+      </button>
+      <button class="tab" id="tab-payout" onclick="switchTab('payout')">
+        📅 My Payout Schedule
+      </button>
+      <button class="tab" id="tab-groups" onclick="switchTab('groups')">
+        🏘 My Groups
+      </button>
+    </div>
+
+    <!-- TAB: CONTRIBUTIONS -->
+    <div class="tab-panel active" id="panel-contribs">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">💳 Contribution History</span>
+          <span class="card-meta" id="contribMeta">Loading...</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Group</th>
+                <th>Cycle</th>
+                <th>Amount</th>
+                <th>Date Paid</th>
+                <th>Method</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="contribTable">
+              <tr><td colspan="6"><div class="loading-box"><div class="spinner"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PENALTIES -->
+    <div class="tab-panel" id="panel-penalties">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">⚠️ My Penalty Records</span>
+          <span class="card-meta" id="penMeta">Loading...</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Group</th>
+                <th>Reason</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="penaltyTable">
+              <tr><td colspan="5"><div class="loading-box"><div class="spinner"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PAYOUT SCHEDULE -->
+    <div class="tab-panel" id="panel-payout">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">📅 Payout Rotation</span>
+          <span class="card-meta">Your position in each group's rotation</span>
+        </div>
+        <div id="payoutContent">
+          <div class="loading-box"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: GROUPS -->
+    <div class="tab-panel" id="panel-groups">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">🏘 My Group Memberships</span>
+        </div>
+        <div class="groups-grid" id="groupsGrid">
+          <div style="grid-column:1/-1;"><div class="loading-box"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script>
+    let myMemberId = null
+    const ic  = n => (n||'').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)||'?'
+    const col = n => { const c=['#0d9488','#115e59','#0369a1','#7c3aed','#b45309','#15803d']; let h=0; for(let x of (n||'')) h=(h*31+x.charCodeAt(0))&0xff; return c[h%c.length] }
+    const fmtDate = d => d ? new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) : '—'
+    const fmtMoney = v => '₱' + Number(v||0).toLocaleString()
+
+    // ── INIT ────────────────────────────────────────────
+    async function init() {
+      const session = await requireAuth()
+      if (!session) return
+
+      const user = await getCurrentUser()
+      if (!user) return
+
+      // Get role — redirect admins to admin dashboard
+      const { data: sysUser } = await db.from('system_user')
+        .select('role, member_id, member:member_id(full_name)')
+        .eq('user_id', user.id).maybeSingle()
+
+      if (!sysUser) { window.location.href = '../index.html'; return }
+      if (sysUser.role === 'ADMIN' || sysUser.role === 'ORGANIZER') {
+        window.location.href = 'dashboard.html'; return
+      }
+
+      myMemberId = sysUser.member_id
+      const name = sysUser.member?.full_name || user.email?.split('@')[0] || 'Member'
+
+      document.getElementById('userInitials').textContent = ic(name)
+      document.getElementById('userName').textContent = name
+      document.getElementById('heroName').textContent = name.split(' ')[0]
+
+      await Promise.all([
+        loadContributions(),
+        loadPenalties(),
+        loadPayoutSchedule(),
+        loadGroups()
+      ])
+    }
+
+    // ── TAB SWITCHING ───────────────────────────────────
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'))
+      document.getElementById('tab-' + tab).classList.add('active')
+      document.getElementById('panel-' + tab).classList.add('active')
+    }
+
+    // ── CONTRIBUTIONS ───────────────────────────────────
+    async function loadContributions() {
+      if (!myMemberId) return
+      const { data } = await db.from('contribution_txn')
+        .select('*, group:group_id(group_name)')
+        .eq('member_id', myMemberId)
+        .order('date_paid', { ascending: false })
+
+      const txns = data || []
+      const total = txns.reduce((s,t) => s + Number(t.amount_paid||0), 0)
+
+      document.getElementById('cntContribs').textContent = txns.length
+      document.getElementById('contribMeta').textContent = `${txns.length} records · ${fmtMoney(total)}`
+      document.getElementById('statPaid').textContent = fmtMoney(total)
+      document.getElementById('hsTotalPaid').textContent = fmtMoney(total)
+
+      const tbody = document.getElementById('contribTable')
+      if (!txns.length) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">💳</div><div class="empty-title">No contributions yet</div><div class="empty-sub">Your payment history will appear here.</div></div></td></tr>`
+        return
+      }
+
+      const bdg = { PAID:'b-paid', LATE:'b-late', MISSED:'b-missed' }
+      tbody.innerHTML = txns.map(t => `
+        <tr>
+          <td><strong>${t.group?.group_name||'—'}</strong></td>
+          <td><span style="font-family:var(--font-display);font-weight:700;">Cycle ${t.cycle_number||'—'}</span></td>
+          <td><span style="font-family:var(--font-display);font-weight:800;color:var(--teal-700);">${fmtMoney(t.amount_paid)}</span></td>
+          <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(t.date_paid)}</td>
+          <td style="color:var(--slate-500);font-size:12.5px;">${t.payment_method||'—'}</td>
+          <td><span class="badge ${bdg[t.payment_status]||'b-paid'}">${t.payment_status}</span></td>
+        </tr>`).join('')
+
+      // Check for any missed/late → show overdue alert
+      const overdue = txns.filter(t => t.payment_status === 'MISSED')
+      if (overdue.length > 0) {
+        document.getElementById('overdueAlert').style.display = 'flex'
+        document.getElementById('overdueTitle').textContent = `⚠️ You have ${overdue.length} missed payment${overdue.length > 1 ? 's' : ''}`
+      }
+    }
+
+    // ── PENALTIES ───────────────────────────────────────
+    async function loadPenalties() {
+      if (!myMemberId) return
+      const { data } = await db.from('penalty')
+        .select('*, group:group_id(group_name)')
+        .eq('member_id', myMemberId)
+        .order('date_imposed', { ascending: false })
+
+      const pens = data || []
+      const unpaid = pens.filter(p => p.penalty_status === 'UNPAID')
+      const total = pens.reduce((s,p) => s + Number(p.penalty_amount||0), 0)
+
+      document.getElementById('cntPenalties').textContent = pens.length
+      document.getElementById('penMeta').textContent = `${pens.length} records · ${fmtMoney(total)}`
+      document.getElementById('statPenCount').textContent = unpaid.length + ' unpaid'
+      document.getElementById('hsPenalties').textContent = pens.length
+
+      const tbody = document.getElementById('penaltyTable')
+      if (!pens.length) {
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty"><div class="empty-icon">🎉</div><div class="empty-title">No penalties!</div><div class="empty-sub">Keep paying on time to stay penalty-free.</div></div></td></tr>`
+        return
+      }
+
+      tbody.innerHTML = pens.map(p => `
+        <tr>
+          <td><strong>${p.group?.group_name||'—'}</strong></td>
+          <td><span class="badge ${p.reason==='LATE'?'b-late':'b-missed'}">${p.reason}</span></td>
+          <td><span style="font-family:var(--font-display);font-weight:800;color:${p.penalty_status==='UNPAID'?'var(--danger)':'var(--slate-500)'};">${fmtMoney(p.penalty_amount)}</span></td>
+          <td style="color:var(--slate-500);font-size:12.5px;">${fmtDate(p.date_imposed)}</td>
+          <td><span class="badge ${p.penalty_status==='PAID'?'b-paid':'b-unpaid'}">${p.penalty_status}</span></td>
+        </tr>`).join('')
+    }
+
+    // ── PAYOUT SCHEDULE ─────────────────────────────────
+    async function loadPayoutSchedule() {
+      if (!myMemberId) return
+      const { data: memberships } = await db.from('group_member')
+        .select('payout_order, group:group_id(group_id, group_name, total_members)')
+        .eq('member_id', myMemberId)
+
+      const el = document.getElementById('payoutContent')
+
+      if (!memberships?.length) {
+        el.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">Not in any group yet</div><div class="empty-sub">Ask your organizer to add you to a group.</div></div>`
+        document.getElementById('statNextPayout').textContent = '—'
+        document.getElementById('hsGroups').textContent = 0
+        return
+      }
+
+      document.getElementById('hsGroups').textContent = memberships.length
+      document.getElementById('heroGroups').textContent = `Member of ${memberships.length} paluwagan group${memberships.length !== 1 ? 's' : ''}`
+
+      let html = ''
+      let nextPayoutText = '—'
+
+      for (const m of memberships) {
+        const groupId = m.group?.group_id
+        const totalM  = m.group?.total_members || memberships.length
+
+        const { data: released } = await db.from('payout_schedule')
+          .select('cycle_number').eq('group_id', groupId)
+          .eq('payout_status', 'RELEASED').order('cycle_number', {ascending:false}).limit(1)
+
+        const lastReleased = released?.[0]?.cycle_number || 0
+        const currentCycle = lastReleased + 1
+        const myOrder = m.payout_order || 1
+        const isMyCycle = myOrder === currentCycle
+
+        // Get all group members for stepper
+        const { data: allMembers } = await db.from('group_member')
+          .select('payout_order, member:member_id(full_name)')
+          .eq('group_id', groupId).order('payout_order')
+
+        // Build mini stepper
+        let stepper = '<div class="stepper">'
+        allMembers?.forEach((gm, i) => {
+          const order = gm.payout_order
+          const isMe  = gm.member && order === myOrder
+          const state = order < currentCycle ? 'done' : (isMe ? 'mine' : (order === currentCycle ? 'current' : 'next'))
+          const icon  = state === 'done' ? '✓' : order
+          stepper += `<div class="step ${state}"><div class="step-dot">${icon}</div><div class="step-name">${gm.member?.full_name||'?'}${isMe?' (You)':''}</div></div>`
+          if (i < (allMembers.length - 1)) stepper += `<div class="step-line ${state === 'done' ? 'done' : 'next'}"></div>`
+        })
+        stepper += '</div>'
+
+        let payoutBox = ''
+        if (isMyCycle) {
+          nextPayoutText = `Cycle ${currentCycle} - ${m.group?.group_name}`
+          payoutBox = `<div class="payout-info" style="background:linear-gradient(135deg,var(--teal-50),#dcfdf5);border-color:var(--teal-300);">
+            <div class="pi-icon">🎉</div>
+            <div>
+              <div class="pi-title" style="color:var(--teal-800);">It's your turn this cycle!</div>
+              <div class="pi-sub">You are the recipient for Cycle ${currentCycle} in ${m.group?.group_name}.</div>
+            </div>
+          </div>`
+        } else {
+          const cyclesLeft = myOrder - currentCycle
+          payoutBox = `<div class="payout-info">
+            <div class="pi-icon">📅</div>
+            <div>
+              <div class="pi-title">You receive payout at Cycle ${myOrder}</div>
+              <div class="pi-sub">${cyclesLeft > 0 ? `${cyclesLeft} cycle${cyclesLeft !== 1 ? 's' : ''} to go` : 'Your payout has been released!'} · ${m.group?.group_name}</div>
+            </div>
+          </div>`
+        }
+
+        html += `<div style="padding:20px 24px;border-bottom:1px solid var(--slate-100);">
+          <div style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--slate-500);margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;">${m.group?.group_name}</div>
+          ${stepper}
+          ${payoutBox}
+        </div>`
+      }
+
+      el.innerHTML = html
+      document.getElementById('statNextPayout').textContent = nextPayoutText
+    }
+
+    // ── GROUPS ───────────────────────────────────────────
+    async function loadGroups() {
+      if (!myMemberId) return
+      const { data } = await db.from('group_member')
+        .select('payout_order, group:group_id(group_name, contribution_amount, pot_amount, cycle_frequency, status, total_members)')
+        .eq('member_id', myMemberId)
+
+      const el = document.getElementById('groupsGrid')
+      if (!data?.length) {
+        el.innerHTML = `<div style="grid-column:1/-1;"><div class="empty"><div class="empty-icon">🏘</div><div class="empty-title">No groups yet</div><div class="empty-sub">You haven't been added to any group.</div></div></div>`
+        return
+      }
+
+      const colors = ['background:linear-gradient(135deg,var(--teal-500),var(--teal-400))','background:linear-gradient(135deg,var(--warn),#fbbf24)','background:linear-gradient(135deg,#22c55e,#4ade80)','background:linear-gradient(135deg,#6366f1,#818cf8)']
+      el.innerHTML = data.map((m, i) => `
+        <div class="group-tile">
+          <div style="width:36px;height:36px;border-radius:10px;${colors[i%4]};display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px;">🏘</div>
+          <div class="gt-name">${m.group?.group_name||'—'}</div>
+          <div class="gt-meta">${m.group?.cycle_frequency||'—'} · ${m.group?.total_members||0} members</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <div style="font-size:13px;font-weight:600;color:var(--slate-600);">₱${Number(m.group?.contribution_amount||0).toLocaleString()}/cycle</div>
+            <span style="background:var(--teal-50);color:var(--teal-700);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;">Order #${m.payout_order}</span>
+            <span class="gt-badge ${m.group?.status==='ONGOING'?'b-paid':'b-missed'}">${m.group?.status||'—'}</span>
+          </div>
+        </div>`).join('')
+    }
+
+    async function doLogout() { await db.auth.signOut(); window.location.href = '../index.html' }
+
+    init()
+  </script>
+</body>
+</html>
