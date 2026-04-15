@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PaluwagAN — Register User</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <style>
+    :root {
+      --teal-900:#042f2e;--teal-800:#134e4a;--teal-700:#115e59;--teal-600:#0d9488;--teal-500:#14b8a6;--teal-400:#2dd4bf;--teal-300:#5eead4;--teal-100:#ccfbf1;--teal-50:#f0fdfa;
+      --green-500:#22c55e;--green-100:#dcfce7;
+      --slate-900:#0f172a;--slate-800:#1e293b;--slate-700:#334155;--slate-500:#64748b;--slate-400:#94a3b8;--slate-200:#e2e8f0;--slate-100:#f1f5f9;--slate-50:#f8fafc;
+      --white:#ffffff;--warn:#f59e0b;--warn-bg:#fffbeb;--danger:#ef4444;--danger-bg:#fef2f2;--danger-100:#fee2e2;--blue-100:#dbeafe;
+      --radius:18px;--radius-sm:12px;--radius-xs:8px;
+      --font-display:'Syne',sans-serif;--font-body:'Instrument Sans',sans-serif;
+      --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+      --shadow-teal:0 8px 30px rgba(20,184,166,.2);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:var(--font-body);background:#f0f4f8;color:var(--slate-900);-webkit-font-smoothing:antialiased;min-height:100vh;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--teal-300);border-radius:3px;}
+    .app{display:flex;min-height:100vh;}
+    .main{margin-left:260px;flex:1;display:flex;flex-direction:column;}
+
+    .sidebar{width:260px;background:var(--teal-900);min-height:100vh;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:200;overflow:hidden;}
+    .sidebar::before{content:'';position:absolute;top:-100px;right:-100px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.12),transparent 65%);pointer-events:none;}
+    .sidebar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,rgba(2,15,14,.6),transparent);pointer-events:none;}
+    .sidebar-inner{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;}
+    .sidebar-top{padding:28px 20px 16px;flex:1;overflow-y:auto;}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:32px;padding:0 4px;}
+    .brand-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal-500),var(--teal-700));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(20,184,166,.4);}
+    .brand-name{font-family:var(--font-display);font-size:20px;font-weight:800;color:white;letter-spacing:-0.3px;}
+    .brand-name span{color:var(--teal-400);}
+    .nav-section-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;margin:20px 0 6px;}
+    .nav-item{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:var(--radius-xs);font-size:13.5px;font-weight:500;color:rgba(255,255,255,.5);text-decoration:none;transition:all .18s;margin-bottom:2px;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+    .nav-item.active{background:linear-gradient(135deg,rgba(20,184,166,.22),rgba(20,184,166,.08));color:var(--teal-300);font-weight:600;box-shadow:inset 0 0 0 1px rgba(94,234,212,.15);}
+    .nav-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0;}
+    .sidebar-footer{padding:16px 20px;position:relative;z-index:2;}
+    .user-card{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .18s;}
+    .user-card:hover{background:rgba(255,255,255,.1);}
+    .user-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal-500),var(--teal-800));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
+    .user-name{font-size:13px;font-weight:600;color:white;}
+    .user-role{font-size:11px;color:var(--teal-400);margin-top:1px;}
+    .user-logout{margin-left:auto;color:rgba(255,255,255,.3);font-size:14px;cursor:pointer;}
+    .user-logout:hover{color:var(--danger);}
+
+    .topbar{background:var(--white);height:64px;border-bottom:1px solid var(--slate-200);padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar-title{font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--slate-900);}
+    .topbar-sub{font-size:11.5px;color:var(--slate-400);margin-top:1px;}
+
+    .page{padding:28px 32px;animation:fadeUp .3s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    .reg-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;}
+
+    .card{background:white;border-radius:var(--radius);border:1px solid var(--slate-100);overflow:hidden;box-shadow:var(--shadow);}
+    .card-head{padding:18px 22px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between;}
+    .card-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--slate-900);}
+    .card-body{padding:22px 24px;}
+
+    .fg{margin-bottom:16px;}
+    .fl{display:block;font-size:11px;font-weight:700;color:var(--slate-500);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+    .fi{width:100%;padding:10px 13px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;color:var(--slate-900);background:white;outline:none;transition:all .18s;}
+    .fi:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(20,184,166,.12);}
+    .fi-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+
+    .alert{padding:12px 15px;border-radius:var(--radius-xs);font-size:13px;margin-bottom:16px;display:none;}
+    .alert.show{display:block;}
+    .alert-err{background:var(--danger-bg);color:#b91c1c;border:1px solid #fecaca;}
+    .alert-ok{background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-100);}
+
+    .btn-reg{width:100%;padding:12px;background:var(--teal-600);color:white;border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:6px;}
+    .btn-reg:hover{background:var(--teal-700);transform:translateY(-1px);box-shadow:var(--shadow-teal);}
+    .btn-reg:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+    .cred-box{background:var(--teal-50);border:1px solid var(--teal-100);border-radius:var(--radius-sm);padding:16px;margin-top:14px;display:none;}
+    .cred-box.show{display:block;}
+    .cred-label{font-size:11px;font-weight:700;color:var(--teal-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+    .cred-val{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal-800);margin-bottom:12px;word-break:break-all;}
+
+    table{width:100%;border-collapse:collapse;}
+    thead th{padding:10px 16px;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--slate-400);background:var(--slate-50);border-bottom:1px solid var(--slate-100);text-align:left;}
+    tbody td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--slate-50);color:var(--slate-700);}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:var(--teal-50);}
+
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge::before{content:'●';font-size:6px;}
+    .b-active{background:var(--green-100);color:#15803d;}
+    .b-none{background:var(--slate-100);color:var(--slate-500);}
+
+    .empty{padding:40px 20px;text-align:center;}
+    .empty-icon{font-size:36px;margin-bottom:12px;opacity:.35;}
+    .empty-title{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--slate-500);margin-bottom:5px;}
+    .empty-sub{font-size:13px;color:var(--slate-400);}
+
+    .pw-toggle{display:flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer;font-size:12px;color:var(--slate-500);font-weight:600;}
+    .pw-toggle:hover{color:var(--teal-600);}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR (same as dashboard) -->
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-icon">🌿</div>
+          <div class="brand-name">Paluwag<span>AN</span></div>
+        </div>
+        <div class="nav-section-label">Overview</div>
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">⊞</span>Dashboard</a>
+        <div class="nav-section-label">Transactions</div>
+        <a href="contributions.html" class="nav-item"><span class="nav-icon">💳</span>Contributions</a>
+        <a href="payouts.html" class="nav-item"><span class="nav-icon">📅</span>Payout Schedule</a>
+        <div class="nav-section-label">Management</div>
+        <a href="members.html" class="nav-item"><span class="nav-icon">👥</span>Members</a>
+        <a href="groups.html" class="nav-item"><span class="nav-icon">🏘</span>Groups</a>
+        <a href="penalties.html" class="nav-item"><span class="nav-icon">⚠️</span>Penalties</a>
+        <div class="nav-section-label">System</div>
+        <a href="audit.html" class="nav-item"><span class="nav-icon">📋</span>Audit Log</a>
+        <div class="nav-section-label">Community</div>
+        <a href="register-member.html" class="nav-item active"><span class="nav-icon">🔐</span>Register User</a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-av" id="userInitials">--</div>
+          <div><div class="user-name" id="userName">Loading...</div><div class="user-role" id="userRole">Admin</div></div>
+          <div class="user-logout" onclick="doLogout()" title="Sign out">⎋</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">🔐 Register Member Account</div>
+        <div class="topbar-sub">Create login credentials for members so they can access the User Portal</div>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="reg-grid">
+
+        <!-- LEFT: Registration Form -->
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">📝 Create Login Account</span>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-err" id="regErr"></div>
+              <div class="alert alert-ok" id="regOk"></div>
+
+              <div class="fg">
+                <label class="fl">Select Member *</label>
+                <select class="fi fi-sel" id="regMember">
+                  <option value="">— Loading members... —</option>
+                </select>
+                <div style="font-size:11.5px;color:var(--slate-400);margin-top:5px;">Only members without an existing account are shown.</div>
+              </div>
+
+              <div class="fg">
+                <label class="fl">Email *</label>
+                <input class="fi" id="regEmail" type="email" placeholder="member@email.com"/>
+              </div>
+
+              <div class="fg">
+                <label class="fl">Temporary Password *</label>
+                <input class="fi" id="regPassword" type="password" placeholder="At least 6 characters"/>
+                <div class="pw-toggle" onclick="togglePw()">
+                  <span id="pwIcon">👁</span> <span id="pwLabel">Show password</span>
+                </div>
+              </div>
+
+              <button class="btn-reg" id="regBtn" onclick="registerUser()">🔐 Create Account</button>
+
+              <!-- Success credential box -->
+              <div class="cred-box" id="credBox">
+                <div style="font-family:var(--font-display);font-size:13px;font-weight:800;color:var(--teal-700);margin-bottom:12px;">✅ Account Created! Share these with the member:</div>
+                <div class="cred-label">Email</div>
+                <div class="cred-val" id="credEmail">—</div>
+                <div class="cred-label">Password</div>
+                <div class="cred-val" id="credPw">—</div>
+                <div style="font-size:11.5px;color:var(--teal-600);margin-top:6px;">⚠️ The member should change their password after first login.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Existing accounts table -->
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">👥 Member Accounts</span>
+              <span style="font-size:12px;color:var(--slate-400);" id="accountCount">Loading...</span>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr><th>Member</th><th>Email</th><th>Role</th><th>Status</th></tr>
+                </thead>
+                <tbody id="accountsTable">
+                  <tr><td colspan="4"><div class="empty"><div class="empty-icon">🔐</div><div class="empty-title">Loading...</div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/notifications.js"></script>
+<script>
+  const ic = n => (n||'').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)||'?'
+
+  // Second client that won't destroy admin session
+  const regClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: { persistSession: false }
+  })
+
+  async function initPage() {
+    await requireAuth()
+    const user = await getCurrentUser(); if (!user) return
+    const { data } = await db.from('system_user').select('role, member:member_id(full_name)').eq('user_id', user.id).maybeSingle()
+    if (data?.role === 'MEMBER') { window.location.href = 'user-portal.html'; return }
+    const name = data?.member?.full_name || user.email?.split('@')[0] || 'Admin'
+    document.getElementById('userName').textContent = name
+    document.getElementById('userRole').textContent = data?.role || 'Admin'
+    document.getElementById('userInitials').textContent = ic(name)
+
+    loadMemberDropdown()
+    loadAccountsTable()
+  }
+
+  async function doLogout() { await db.auth.signOut(); window.location.href = '../index.html' }
+
+  function togglePw() {
+    const inp = document.getElementById('regPassword')
+    const isHidden = inp.type === 'password'
+    inp.type = isHidden ? 'text' : 'password'
+    document.getElementById('pwIcon').textContent = isHidden ? '🙈' : '👁'
+    document.getElementById('pwLabel').textContent = isHidden ? 'Hide password' : 'Show password'
+  }
+
+  // Load members who do NOT yet have a system_user account
+  async function loadMemberDropdown() {
+    const { data: allMembers } = await db.from('member').select('member_id, full_name').eq('status', 'ACTIVE').order('full_name')
+    const { data: registered } = await db.from('system_user').select('member_id')
+
+    const regIds = new Set(registered?.map(r => r.member_id) || [])
+    const unregistered = allMembers?.filter(m => !regIds.has(m.member_id)) || []
+
+    const sel = document.getElementById('regMember')
+    if (!unregistered.length) {
+      sel.innerHTML = '<option value="">— All members already have accounts —</option>'
+      return
+    }
+    sel.innerHTML = '<option value="">— Select a member —</option>'
+    unregistered.forEach(m => sel.innerHTML += `<option value="${m.member_id}">${m.full_name}</option>`)
+  }
+
+  // Load all system_user records
+  async function loadAccountsTable() {
+    const { data } = await db.from('system_user')
+      .select('user_id, role, member:member_id(full_name, status)')
+      .order('role')
+
+    const tbody = document.getElementById('accountsTable')
+    if (!data?.length) {
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><div class="empty-icon">🔐</div><div class="empty-title">No accounts yet</div><div class="empty-sub">Use the form to create the first member account.</div></div></td></tr>`
+      document.getElementById('accountCount').textContent = '0 accounts'
+      return
+    }
+
+    document.getElementById('accountCount').textContent = `${data.length} account${data.length !== 1 ? 's' : ''}`
+
+    // Get the associated auth user emails
+    tbody.innerHTML = data.map(u => `
+      <tr>
+        <td><strong>${u.member?.full_name || '—'}</strong></td>
+        <td style="font-size:12.5px;color:var(--slate-500);">—</td>
+        <td><span class="badge ${u.role === 'ADMIN' ? 'b-active' : 'b-none'}">${u.role}</span></td>
+        <td><span class="badge b-active">${u.member?.status || 'ACTIVE'}</span></td>
+      </tr>`).join('')
+  }
+
+  async function registerUser() {
+    const memberId = document.getElementById('regMember').value
+    const email    = document.getElementById('regEmail').value.trim()
+    const password = document.getElementById('regPassword').value
+    const errEl    = document.getElementById('regErr')
+    const okEl     = document.getElementById('regOk')
+    const btn      = document.getElementById('regBtn')
+
+    errEl.classList.remove('show'); okEl.classList.remove('show')
+    document.getElementById('credBox').classList.remove('show')
+
+    if (!memberId) { errEl.textContent = 'Please select a member.'; errEl.classList.add('show'); return }
+    if (!email) { errEl.textContent = 'Email is required.'; errEl.classList.add('show'); return }
+    if (!password || password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return }
+
+    btn.disabled = true; btn.textContent = 'Creating...'
+
+    // 1. Create Supabase Auth user using the separate client (won't log out admin)
+    const { data: signUpData, error: signUpErr } = await regClient.auth.signUp({
+      email, password
+    })
+
+    if (signUpErr) {
+      errEl.textContent = 'Auth error: ' + signUpErr.message
+      errEl.classList.add('show')
+      btn.disabled = false; btn.textContent = '🔐 Create Account'; return
+    }
+
+    const newUserId = signUpData?.user?.id
+    if (!newUserId) {
+      errEl.textContent = 'Account created but no user ID returned. Check Supabase auth settings.'
+      errEl.classList.add('show')
+      btn.disabled = false; btn.textContent = '🔐 Create Account'; return
+    }
+
+    // 2. Create system_user record linking auth user to member
+    const { error: sysErr } = await db.from('system_user').insert({
+      user_id: newUserId,
+      member_id: parseInt(memberId),
+      role: 'MEMBER'
+    })
+
+    if (sysErr) {
+      errEl.textContent = 'System user error: ' + sysErr.message
+      errEl.classList.add('show')
+      btn.disabled = false; btn.textContent = '🔐 Create Account'; return
+    }
+
+    // 3. Success!
+    okEl.textContent = '✅ Account created successfully!'
+    okEl.classList.add('show')
+
+    document.getElementById('credEmail').textContent = email
+    document.getElementById('credPw').textContent = password
+    document.getElementById('credBox').classList.add('show')
+
+    btn.disabled = false; btn.textContent = '🔐 Create Account'
+    showToast('Member account registered!', 'success')
+
+    // Refresh lists
+    loadMemberDropdown()
+    loadAccountsTable()
+  }
+
+  initPage()
+</script>
+</body>
+</html>

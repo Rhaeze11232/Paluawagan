@@ -220,6 +220,7 @@
         <div class="nav-section-label">System</div>
         <a href="audit.html" class="nav-item"><span class="nav-icon">📋</span>Audit Log</a>
         <div class="nav-section-label">Community</div>
+        <a href="register-member.html" class="nav-item"><span class="nav-icon">🔐</span>Register User</a>
         <a href="join.html" target="_blank" class="nav-item"><span class="nav-icon">🙋</span>Join Requests<span class="nav-badge" id="badge-join">0</span></a>
       </div>
       <div class="sidebar-footer">
@@ -266,6 +267,16 @@
           <div style="font-size:12.5px;color:rgba(255,255,255,.75);margin-top:3px;" id="joinBannerSub">Pending applicants waiting for review.</div>
         </div>
         <button onclick="document.getElementById('joinSection').scrollIntoView({behavior:'smooth'})" style="padding:9px 20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;">Review Now ↓</button>
+      </div>
+
+      <!-- PENDING PAYMENT REVIEWS BANNER -->
+      <div id="reviewBanner" style="display:none;background:linear-gradient(135deg,#78350f,#f59e0b);border-radius:18px;padding:18px 24px;margin-bottom:20px;align-items:center;gap:16px;box-shadow:0 8px 24px rgba(245,158,11,.25);animation:fadeUp .3s ease;">
+        <div style="font-size:26px;">💳</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:800;color:white;" id="reviewBannerTitle">Pending Payment Reviews</div>
+          <div style="font-size:12.5px;color:rgba(255,255,255,.75);margin-top:3px;" id="reviewBannerSub">Members have submitted payments for your review.</div>
+        </div>
+        <button onclick="document.getElementById('reviewSection').scrollIntoView({behavior:'smooth'})" style="padding:9px 20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;">Review Now ↓</button>
       </div>
 
       <!-- WELCOME BANNER -->
@@ -377,6 +388,22 @@
         <div style="grid-column:1/-1;"><div class="loading-box"><div class="spinner"></div></div></div>
       </div>
 
+      <!-- PENDING PAYMENT REVIEWS TABLE -->
+      <div id="reviewSection" style="display:none;margin-bottom:24px;">
+        <div class="sec-head">
+          <div class="sec-title">💳 Payments Pending Review</div>
+          <span id="reviewCount" style="font-size:12.5px;color:var(--slate-400);"></span>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Member</th><th>Group</th><th>Cycle</th><th>Amount</th><th>Date</th><th>Method</th><th>Receipt</th><th>Actions</th></tr></thead>
+              <tbody id="reviewTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- OVERDUE MEMBERS DETAIL TABLE -->
       <div id="overdueSection" style="display:none;margin-bottom:24px;">
         <div class="sec-head">
@@ -445,6 +472,7 @@
     // Automation checks — run after core data
     checkOverdue()
     loadJoinRequests()
+    loadPendingReviews()
   }
 
   async function loadUser() {
@@ -822,6 +850,81 @@
     }
     c.appendChild(t)
     setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300) }, 4000)
+  }
+
+  // ── PENDING PAYMENT REVIEWS ─────────────────────────
+  async function loadPendingReviews() {
+    const { data, error } = await db.from('contribution_txn')
+      .select('*, member:member_id(full_name), group:group_id(group_name)')
+      .eq('payment_status', 'PENDING_REVIEW')
+      .order('date_paid', { ascending: false })
+    if (error || !data?.length) return
+
+    document.getElementById('reviewBannerTitle').textContent = `💳 ${data.length} Payment${data.length > 1 ? 's' : ''} Pending Review`
+    document.getElementById('reviewBannerSub').textContent = `${data.length} member submission${data.length > 1 ? 's' : ''} waiting for your approval.`
+    document.getElementById('reviewBanner').style.display = 'flex'
+    document.getElementById('reviewSection').style.display = 'block'
+    document.getElementById('reviewCount').textContent = `${data.length} pending`
+
+    document.getElementById('reviewTable').innerHTML = data.map(t => `
+      <tr id="rv-${t.transaction_id}">
+        <td><strong>${t.member?.full_name||'—'}</strong></td>
+        <td style="font-size:12.5px;color:var(--slate-500);">${t.group?.group_name||'—'}</td>
+        <td style="font-family:var(--font-display);font-weight:700;">C${t.cycle_number}</td>
+        <td style="font-family:var(--font-display);font-weight:800;">₱${Number(t.amount_paid||0).toLocaleString()}</td>
+        <td style="font-size:12.5px;color:var(--slate-500);">${fmtDate(t.date_paid)}</td>
+        <td style="font-size:12.5px;color:var(--slate-500);">${t.payment_method||'—'}</td>
+        <td>${t.receipt_url ? `<a href="${t.receipt_url}" target="_blank" style="color:var(--teal-600);font-weight:700;font-size:12px;">📎 View</a>` : '<span style="font-size:12px;color:var(--slate-400);">None</span>'}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button onclick="handlePaymentReview(${t.transaction_id}, ${t.member_id}, ${t.group_id}, '${t.date_paid}', 'PAID')"
+              style="padding:5px 12px;background:var(--teal-50);border:1px solid var(--teal-200);color:var(--teal-700);border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;"
+              onmouseover="this.style.background='var(--teal-600)';this.style.color='white'"
+              onmouseout="this.style.background='var(--teal-50)';this.style.color='var(--teal-700)'">✓ Approve</button>
+            <button onclick="handlePaymentReview(${t.transaction_id}, ${t.member_id}, ${t.group_id}, '${t.date_paid}', 'LATE')"
+              style="padding:5px 12px;background:var(--warn-bg);border:1px solid var(--warn-100);color:#92400e;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;"
+              onmouseover="this.style.background='var(--warn)';this.style.color='white'"
+              onmouseout="this.style.background='var(--warn-bg)';this.style.color='#92400e'">Late</button>
+            <button onclick="handlePaymentReview(${t.transaction_id}, ${t.member_id}, ${t.group_id}, '${t.date_paid}', 'REJECTED')"
+              style="padding:5px 12px;background:var(--danger-bg);border:1px solid var(--danger-100);color:var(--danger);border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;"
+              onmouseover="this.style.background='var(--danger)';this.style.color='white'"
+              onmouseout="this.style.background='var(--danger-bg)';this.style.color='var(--danger)'">✕ Reject</button>
+          </div>
+        </td>
+      </tr>`).join('')
+  }
+
+  async function handlePaymentReview(txnId, memberId, groupId, datePaid, newStatus) {
+    const labels = { PAID: 'Approve', LATE: 'mark as Late', REJECTED: 'Reject' }
+    if (!confirm(`${labels[newStatus]} this payment?`)) return
+
+    await db.from('contribution_txn').update({ payment_status: newStatus }).eq('transaction_id', txnId)
+
+    // Auto-create penalty for LATE
+    if (newStatus === 'LATE') {
+      await db.from('penalty').insert({
+        transaction_id: txnId,
+        member_id: memberId,
+        group_id: groupId,
+        penalty_amount: 50,
+        reason: 'LATE',
+        penalty_status: 'UNPAID',
+        date_imposed: datePaid || new Date().toISOString().split('T')[0]
+      })
+      dashToast('⚠️ Payment marked as LATE — penalty auto-logged.', '#f59e0b')
+    } else if (newStatus === 'PAID') {
+      dashToast('✅ Payment approved!', '#0d9488')
+    } else {
+      dashToast('Payment rejected.', '#64748b')
+    }
+
+    document.getElementById('rv-' + txnId)?.remove()
+    const left = document.getElementById('reviewTable').querySelectorAll('tr[id]').length
+    if (!left) {
+      document.getElementById('reviewSection').style.display = 'none'
+      document.getElementById('reviewBanner').style.display = 'none'
+    }
+    loadStats()
   }
 
   init()

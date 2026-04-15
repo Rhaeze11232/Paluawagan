@@ -145,6 +145,43 @@
     /* ── TAB PANELS ── */
     .tab-panel{display:none;}
     .tab-panel.active{display:block;}
+
+    /* ── MODAL ── */
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;animation:fadeIn .2s ease;}
+    .modal-overlay.open{display:flex;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:white;border-radius:var(--radius);width:95%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.25);animation:slideUp .25s ease;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    .m-head{padding:20px 24px;border-bottom:1px solid var(--slate-100);display:flex;align-items:center;justify-content:space-between;}
+    .m-title{font-family:var(--font-display);font-size:17px;font-weight:800;color:var(--slate-900);}
+    .m-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--slate-200);background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
+    .m-close:hover{background:var(--danger-bg);border-color:var(--danger);color:var(--danger);}
+    .m-body{padding:20px 24px;}
+    .fg{margin-bottom:16px;}
+    .fl{display:block;font-size:11px;font-weight:700;color:var(--slate-500);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+    .fi{width:100%;padding:10px 13px;border:1.5px solid var(--slate-200);border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13px;color:var(--slate-900);background:white;outline:none;transition:all .18s;}
+    .fi:focus{border-color:var(--teal-500);box-shadow:0 0 0 3px rgba(20,184,166,.12);}
+    .fi-sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+    .m-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .m-alert{padding:10px 14px;border-radius:var(--radius-xs);font-size:12.5px;margin-bottom:14px;display:none;}
+    .m-alert.show{display:block;}
+    .m-alert-err{background:var(--danger-bg);color:#b91c1c;border:1px solid #fecaca;}
+    .m-alert-ok{background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-100);}
+    .m-submit{width:100%;padding:12px;background:var(--teal-600);color:white;border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;}
+    .m-submit:hover{background:var(--teal-700);transform:translateY(-1px);box-shadow:var(--shadow-teal);}
+    .m-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+    .receipt-drop{border:2px dashed var(--slate-200);border-radius:var(--radius-xs);padding:18px;text-align:center;cursor:pointer;transition:all .18s;}
+    .receipt-drop:hover{border-color:var(--teal-400);background:var(--teal-50);}
+    .receipt-drop input{display:none;}
+    .receipt-label{font-size:12.5px;color:var(--slate-400);}
+
+    /* ── PENDING/REJECTED BADGES ── */
+    .b-pending-review{background:#fef3c7;color:#92400e;}
+    .b-rejected{background:var(--danger-100);color:#b91c1c;}
+
+    /* ── SUBMIT PAYMENT BUTTON ── */
+    .hero-btn{padding:11px 24px;background:var(--teal-400);color:var(--teal-900);border:none;border-radius:var(--radius-xs);font-family:var(--font-body);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:12px;}
+    .hero-btn:hover{background:var(--teal-300);transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,212,191,.35);}
   </style>
 </head>
 <body>
@@ -181,6 +218,7 @@
         <div class="hero-greeting">Welcome back 👋</div>
         <div class="hero-name">Hello, <span id="heroName">Member</span></div>
         <div class="hero-sub" id="heroGroups">Loading your group info...</div>
+        <button class="hero-btn" onclick="openPaymentModal()">💳 Submit My Payment</button>
       </div>
       <div class="hero-right" id="heroStats">
         <div class="hero-stat">
@@ -319,6 +357,58 @@
 
   </div>
 
+  <!-- SUBMIT PAYMENT MODAL -->
+  <div class="modal-overlay" id="payModal">
+    <div class="modal">
+      <div class="m-head">
+        <div class="m-title">💳 Submit Payment</div>
+        <div class="m-close" onclick="closePayModal()">✕</div>
+      </div>
+      <div class="m-body">
+        <div class="m-alert m-alert-err" id="payErr"></div>
+        <div class="m-alert m-alert-ok" id="payOk"></div>
+
+        <div class="fg">
+          <label class="fl">Group *</label>
+          <select class="fi fi-sel" id="payGroup" onchange="onGroupChange()"><option value="">— Select group —</option></select>
+        </div>
+        <div class="m-row">
+          <div class="fg">
+            <label class="fl">Cycle *</label>
+            <input class="fi" id="payCycle" type="number" min="1" placeholder="e.g. 1"/>
+          </div>
+          <div class="fg">
+            <label class="fl">Amount (auto-filled)</label>
+            <input class="fi" id="payAmount" type="number" placeholder="₱0" readonly style="background:var(--slate-50);"/>
+          </div>
+        </div>
+        <div class="m-row">
+          <div class="fg">
+            <label class="fl">Date Paid *</label>
+            <input class="fi" id="payDate" type="date"/>
+          </div>
+          <div class="fg">
+            <label class="fl">Payment Method</label>
+            <select class="fi fi-sel" id="payMethod">
+              <option value="CASH">Cash</option>
+              <option value="GCASH">GCash</option>
+              <option value="BANK">Bank Transfer</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">Receipt / Proof of Payment</label>
+          <div class="receipt-drop" onclick="document.getElementById('payReceipt').click()">
+            <input type="file" id="payReceipt" accept="image/*" onchange="showFileName(this)"/>
+            <div class="receipt-label" id="receiptLabel">📎 Click to upload receipt image</div>
+          </div>
+        </div>
+        <button class="m-submit" id="paySubmitBtn" onclick="submitPayment()">Submit Payment for Review →</button>
+        <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--slate-400);">Your payment will be reviewed by the organizer before it's confirmed.</div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase.js"></script>
   <script src="../js/auth.js"></script>
@@ -393,7 +483,7 @@
         return
       }
 
-      const bdg = { PAID:'b-paid', LATE:'b-late', MISSED:'b-missed' }
+      const bdg = { PAID:'b-paid', LATE:'b-late', MISSED:'b-missed', PENDING_REVIEW:'b-pending-review', REJECTED:'b-rejected' }
       tbody.innerHTML = txns.map(t => `
         <tr>
           <td><strong>${t.group?.group_name||'—'}</strong></td>
@@ -557,6 +647,116 @@
     }
 
     async function doLogout() { await db.auth.signOut(); window.location.href = '../index.html' }
+
+    // ── PAYMENT SUBMISSION ─────────────────────────────
+    let myGroups = []
+
+    function openPaymentModal() {
+      document.getElementById('payModal').classList.add('open')
+      document.getElementById('payErr').classList.remove('show')
+      document.getElementById('payOk').classList.remove('show')
+      document.getElementById('payDate').value = new Date().toISOString().split('T')[0]
+      loadMyGroups()
+    }
+    function closePayModal() {
+      document.getElementById('payModal').classList.remove('open')
+    }
+    function showFileName(input) {
+      const label = document.getElementById('receiptLabel')
+      label.textContent = input.files?.[0] ? '📎 ' + input.files[0].name : '📎 Click to upload receipt image'
+    }
+
+    async function loadMyGroups() {
+      if (!myMemberId) return
+      const { data } = await db.from('group_member')
+        .select('group:group_id(group_id, group_name, contribution_amount)')  
+        .eq('member_id', myMemberId)
+      myGroups = data?.map(d => d.group) || []
+      const sel = document.getElementById('payGroup')
+      sel.innerHTML = '<option value="">— Select group —</option>'
+      myGroups.forEach(g => sel.innerHTML += `<option value="${g.group_id}">${g.group_name}</option>`)
+    }
+
+    function onGroupChange() {
+      const gid = parseInt(document.getElementById('payGroup').value)
+      const g = myGroups.find(x => x.group_id === gid)
+      document.getElementById('payAmount').value = g?.contribution_amount || ''
+    }
+
+    async function submitPayment() {
+      const groupId = document.getElementById('payGroup').value
+      const cycle   = document.getElementById('payCycle').value
+      const amount  = document.getElementById('payAmount').value
+      const date    = document.getElementById('payDate').value
+      const method  = document.getElementById('payMethod').value
+      const fileInp = document.getElementById('payReceipt')
+      const errEl   = document.getElementById('payErr')
+      const okEl    = document.getElementById('payOk')
+      const btn     = document.getElementById('paySubmitBtn')
+
+      errEl.classList.remove('show'); okEl.classList.remove('show')
+
+      if (!groupId || !cycle || !date) {
+        errEl.textContent = 'Please fill in group, cycle, and date.'
+        errEl.classList.add('show'); return
+      }
+      if (!amount || parseFloat(amount) <= 0) {
+        errEl.textContent = 'Amount cannot be zero.'
+        errEl.classList.add('show'); return
+      }
+
+      // Duplicate check
+      const { data: existing } = await db.from('contribution_txn')
+        .select('transaction_id')
+        .eq('member_id', myMemberId).eq('group_id', parseInt(groupId))
+        .eq('cycle_number', parseInt(cycle))
+        .in('payment_status', ['PAID','PENDING_REVIEW'])
+        .limit(1)
+      if (existing?.length > 0) {
+        errEl.textContent = 'You already have a payment (or pending submission) for this cycle.'
+        errEl.classList.add('show'); return
+      }
+
+      btn.disabled = true; btn.textContent = 'Submitting...'
+
+      // Upload receipt if provided
+      let receiptUrl = null
+      if (fileInp.files?.[0]) {
+        const file = fileInp.files[0]
+        const ext = file.name.split('.').pop()
+        const fileName = `receipt_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+        const { error: upErr } = await db.storage.from('receipts').upload(fileName, file, { cacheControl:'3600', upsert:false })
+        if (!upErr) {
+          const { data: urlData } = db.storage.from('receipts').getPublicUrl(fileName)
+          receiptUrl = urlData?.publicUrl || null
+        }
+      }
+
+      const payload = {
+        member_id: myMemberId,
+        group_id: parseInt(groupId),
+        cycle_number: parseInt(cycle),
+        amount_paid: parseFloat(amount),
+        date_paid: date,
+        payment_method: method,
+        payment_status: 'PENDING_REVIEW'
+      }
+      if (receiptUrl) payload.receipt_url = receiptUrl
+
+      const { error } = await db.from('contribution_txn').insert(payload)
+
+      if (error) {
+        errEl.textContent = 'Error: ' + (error.message || 'Please try again.')
+        errEl.classList.add('show')
+        btn.disabled = false; btn.textContent = 'Submit Payment for Review →'; return
+      }
+
+      okEl.textContent = '✅ Payment submitted for review! Your organizer will confirm it shortly.'
+      okEl.classList.add('show')
+      btn.disabled = false; btn.textContent = 'Submit Payment for Review →'
+      showToast('Payment submitted for review!', 'success')
+      setTimeout(() => { closePayModal(); loadContributions() }, 1500)
+    }
 
     init()
   </script>
